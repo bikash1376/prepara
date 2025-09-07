@@ -8,7 +8,9 @@ const Navbar = () => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const [showMobileDropdown, setShowMobileDropdown] = useState(false);
+  const dropdownRef = useRef(null); // desktop
+  const mobileDropdownRef = useRef(null); // mobile
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -19,9 +21,14 @@ const Navbar = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+      if (
+        (dropdownRef.current && dropdownRef.current.contains(event.target)) ||
+        (mobileDropdownRef.current && mobileDropdownRef.current.contains(event.target))
+      ) {
+        return;
       }
+      setShowDropdown(false);
+      setShowMobileDropdown(false);
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -146,15 +153,15 @@ const Navbar = () => {
           </div>
 
           {/* Mobile User Dropdown */}
-          <div className="md:hidden relative" ref={dropdownRef}>
+          <div className="md:hidden relative" ref={mobileDropdownRef}>
             <button
-              onClick={() => setShowDropdown(!showDropdown)}
+              onClick={() => setShowMobileDropdown(!showMobileDropdown)}
               className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors"
             >
               <CircleUserRound size={20} />
             </button>
             
-            {showDropdown && (
+            {showMobileDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
                 <div className="px-4 py-2 text-sm text-gray-700 border-b">
                   <div className="font-medium">{role === "admin" ? "Admin" : "Student"}</div>
@@ -163,7 +170,7 @@ const Navbar = () => {
                 <button
                   onClick={() => {
                     handleLogout();
-                    setShowDropdown(false);
+                    setShowMobileDropdown(false);
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >

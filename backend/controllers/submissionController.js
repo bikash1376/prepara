@@ -176,3 +176,17 @@ export const getTestSubmissions = async (req, res) => {
     res.status(500).json({ message: "Failed to get test submissions" });
   }
 };
+
+// Admin: Get all submissions for a specific user
+export const getUserSubmissions = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const submissions = await Submission.find({ userId })
+      .select('testName score totalQuestions percentage submittedAt timeTaken')
+      .sort({ submittedAt: -1 });
+    res.json(submissions);
+  } catch (error) {
+    console.error('Admin get user submissions error:', error);
+    res.status(500).json({ message: "Failed to get user submissions" });
+  }
+};

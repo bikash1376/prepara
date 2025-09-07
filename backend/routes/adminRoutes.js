@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../models/User.js";
 import { protect, isAdmin } from "../middlewares/authMiddleware.js";
+import { getUserSubmissions } from "../controllers/submissionController.js";
 
 const router = express.Router();
 
@@ -26,5 +27,8 @@ router.put("/users/:id", protect, isAdmin, async (req, res) => {
   await user.save();
   res.json(user);
 });
+
+// Admin: Get all submissions for a user
+router.get("/submissions/:userId", protect, isAdmin, getUserSubmissions);
 
 export default router;

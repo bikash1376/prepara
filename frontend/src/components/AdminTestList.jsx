@@ -11,11 +11,15 @@ const AdminTestList = () => {
   const fetchTests = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/v1/admin/tests");
+      const res = await fetch("http://localhost:5000/api/v1/admin/tests", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       const data = await res.json();
       setTests(data);
     } catch (error) {
-      setMessage("Error fetching tests");
+      setMessage("Error fetching tests", error);
     }
     setLoading(false);
   };
@@ -30,6 +34,9 @@ const AdminTestList = () => {
     try {
       const res = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       if (res.ok) {
         setMessage("Test deleted!");
@@ -38,7 +45,7 @@ const AdminTestList = () => {
         setMessage("Error deleting test");
       }
     } catch (error) {
-      setMessage("Error deleting test");
+      setMessage("Error deleting test", error.message);
     }
     setLoading(false);
   };

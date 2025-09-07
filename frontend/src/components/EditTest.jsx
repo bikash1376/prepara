@@ -18,7 +18,13 @@ const EditTest = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/v1/admin/tests/${id}`)
+    fetch(`http://localhost:5000/api/v1/admin/tests/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
       .then(res => res.json())
       .then(data => {
         setTestname(data.testname);
@@ -62,11 +68,16 @@ const EditTest = () => {
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testname, questions })
-      });
+      const res = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ testname, questions })
+        }
+      );
       if (res.ok) {
         setMessage("Test updated successfully!");
         setTimeout(() => navigate("/admin/test-list"), 1000);

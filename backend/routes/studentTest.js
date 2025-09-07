@@ -1,15 +1,16 @@
 import express from 'express';
 import { studentGetAllTests, studentGetTestById, studentGetTestResults, studentSubmitTest } from '../controllers/studentTestController.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const studentTestRoutes = express.Router();
 
-studentTestRoutes.get('/all',studentGetAllTests);
+studentTestRoutes.get('/all', protect, studentGetAllTests);
 
-studentTestRoutes.get('/:id', studentGetTestById);
+studentTestRoutes.get('/:id', protect, studentGetTestById);
 
-studentTestRoutes.post('/:id/submit', studentSubmitTest);
+studentTestRoutes.post('/:id/submit', protect, studentSubmitTest);
 
-studentTestRoutes.get('/:id/results', studentGetTestResults);
+studentTestRoutes.get('/:id/results', protect, studentGetTestResults);
 
 
 
