@@ -3,6 +3,8 @@ import React from "react";
 const LogoutButton = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
     window.location.href = "/login"; // redirect back to login page
   };
 

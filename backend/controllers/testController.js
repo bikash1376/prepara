@@ -3,18 +3,35 @@ import Submission from '../models/Submission.js';
 
 export const addTest = async (req, res) => {
     try {
-        const { testname, questions } = req.body;
+        const { testname, sections } = req.body;
 
         if (!testname) {
             return res.status(400).send("Test name is required");
         }
-        if (!Array.isArray(questions) || questions.length === 0) {
-            return res.status(400).send("Questions array required");
+        if (!Array.isArray(sections) || sections.length === 0) {
+            return res.status(400).send("Sections array required");
+        }
+
+        // Validate sections/modules/questions structure
+        for (const section of sections) {
+            if (!section.sectionName || !Array.isArray(section.modules) || section.modules.length === 0) {
+                return res.status(400).send("Each section must have a name and at least one module");
+            }
+            for (const module of section.modules) {
+                if (!module.moduleName || typeof module.timer !== 'number' || !Array.isArray(module.questions) || module.questions.length === 0) {
+                    return res.status(400).send("Each module must have a name, timer, and at least one question");
+                }
+                for (const q of module.questions) {
+                    if (!q.question || !Array.isArray(q.options) || q.options.length < 2 || !q.answer) {
+                        return res.status(400).send("Each question must have text, at least 2 options, and an answer");
+                    }
+                }
+            }
         }
 
         const test = new Test({
             testname,
-            questions
+            sections
         });
         await test.save();
 
@@ -114,26 +131,19 @@ export const checkTestAccess = async (req, res) => {
 }
 
 export const updateTest = async (req, res) => {
-     // Logic to update a test by ID
-try {
-
-
-    const updates = req.body;
-
-    const test = await Test.findByIdAndUpdate(req.params.id, updates, {
-        new: true,
-        runValidators: true
-    });
-
-    if(!test) return res.status(404).send("Test not found");
-
-    res.json({message: "Test updated successfully", test});
-
+    try {
+        const updates = req.body;
+        // Optionally validate structure as above
+        const test = await Test.findByIdAndUpdate(req.params.id, updates, {
+            new: true,
+            runValidators: true
+        });
+        if(!test) return res.status(404).send("Test not found");
+        res.json({message: "Test updated successfully", test});
     } catch (error) {
         console.error("Error updating test:", error);
         res.status(500).send("Internal Server Error");
     }
-
 }
 
 export const deleteTest = async (req, res) => {

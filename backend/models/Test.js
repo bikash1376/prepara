@@ -7,9 +7,23 @@ const questionSchema = new mongoose.Schema({
     explanation: { type: String, default: '' }
 });
 
+const moduleSchema = new mongoose.Schema({
+    moduleName: { type: String, required: true },
+    timer: { type: Number, required: true }, // seconds
+    questions: [questionSchema]
+});
+
+const sectionSchema = new mongoose.Schema({
+    sectionName: { type: String, required: true },
+    modules: [moduleSchema],
+    breakAfter: {
+        duration: { type: Number, default: 0 } // seconds, 0 = no break
+    }
+});
+
 const testSchema = new mongoose.Schema({
     testname: { type: String, required: true },
-    questions: [questionSchema]
+    sections: [sectionSchema]
 });
 
 export default mongoose.model('Test', testSchema);

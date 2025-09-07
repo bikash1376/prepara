@@ -14,7 +14,9 @@ const AuthForm = ({ mode = "login" }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userRole = localStorage.getItem("role");
-    
+    if (!token) {
+      localStorage.removeItem("username");
+    }
     if (token && userRole) {
       // User is already logged in, redirect to appropriate dashboard
       if (userRole === "admin") {
@@ -66,7 +68,7 @@ const AuthForm = ({ mode = "login" }) => {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
-
+        localStorage.setItem("username", data.user.name || "");
         setMessage("Success! Redirecting...");
 
         // ✅ Redirect based on role
@@ -79,7 +81,7 @@ const AuthForm = ({ mode = "login" }) => {
         setMessage(data.message || "Error");
       }
     } catch (err) {
-      setMessage("Network error");
+      setMessage("Network error", err.message);
     }
     setLoading(false);
   };
@@ -88,8 +90,16 @@ const AuthForm = ({ mode = "login" }) => {
     window.location.href = "http://localhost:5000/api/v1/auth/google";
   };
 
+  // Show username if logged in
+  const username = localStorage.getItem("username");
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+      {username && (
+        <div className="mb-2 text-green-700 text-center font-semibold">
+          Welcome, {username}!
+        </div>
+      )}
       <h2 className="text-2xl font-bold mb-4">
         {mode === "signup" ? "Sign Up" : "Login"}
       </h2>

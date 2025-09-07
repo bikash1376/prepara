@@ -5,67 +5,50 @@ const TestSubmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [test, setTest] = useState(null);
-  const [answers, setAnswers] = useState([]);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [currentModule, setCurrentModule] = useState(0);
+  const [moduleAnswers, setModuleAnswers] = useState({}); // {sectionIdx: {moduleIdx: [answers]}}
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes default
+  const [timer, setTimer] = useState(0);
+  const [breakTime, setBreakTime] = useState(0);
+  const [inBreak, setInBreak] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [startTime] = useState(Date.now());
   const [showDesmos, setShowDesmos] = useState(false);
   const [showScientific, setShowScientific] = useState(false);
   const desmosRef = useRef(null);
   const scientificRef = useRef(null);
   const desmosCalculator = useRef(null);
   const scientificCalculator = useRef(null);
+  const [startTime] = useState(Date.now());
 
+  // Load Desmos API
   useEffect(() => {
-    checkTestAccess();
-    loadDesmosAPI();
-  }, [id]);
-
-  const loadDesmosAPI = () => {
-    // Check if Desmos API is already loaded
-    if (window.Desmos) {
-      return;
-    }
-
+    if (window.Desmos) return;
     const script = document.createElement('script');
-    const apiKey = import.meta.env.VITE_DESMOS_API_KEY || 'dcb31709b452b1cf9dc26972add0fda6'; // Default demo key
+    const apiKey = 'dcb31709b452b1cf9dc26972add0fda6';
     script.src = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`;
     script.async = true;
     document.head.appendChild(script);
-  };
+  }, []);
 
-  const initializeDesmosCalculator = () => {
-    if (desmosRef.current && window.Desmos && !desmosCalculator.current) {
-      desmosCalculator.current = window.Desmos.GraphingCalculator(desmosRef.current, {
-        expressions: true,
-        settingsMenu: true,
-        zoomButtons: true,
-        expressionsTopbar: false,
-        pointsOfInterest: false,
-        trace: false,
-        border: false,
-        lockViewport: false,
-        expressionsCollapsed: true,
-      });
-    }
-  };
-
-  const initializeScientificCalculator = () => {
-    if (scientificRef.current && window.Desmos && !scientificCalculator.current) {
-      scientificCalculator.current = window.Desmos.ScientificCalculator(scientificRef.current, {
-        expressions: false,
-        settingsMenu: false,
-        border: false
-      });
-    }
-  };
-
+  // Desmos calculator init
   useEffect(() => {
     if (showDesmos) {
       const timer = setTimeout(() => {
-        initializeDesmosCalculator();
+        if (desmosRef.current && window.Desmos && !desmosCalculator.current) {
+          desmosCalculator.current = window.Desmos.GraphingCalculator(desmosRef.current, {
+            expressions: true,
+            settingsMenu: true,
+            zoomButtons: true,
+            expressionsTopbar: false,
+            pointsOfInterest: false,
+            trace: false,
+            border: false,
+            lockViewport: false,
+            expressionsCollapsed: true,
+          });
+        }
       }, 100);
       return () => clearTimeout(timer);
     } else if (desmosCalculator.current) {
@@ -74,10 +57,17 @@ const TestSubmission = () => {
     }
   }, [showDesmos]);
 
+  // Scientific calculator init
   useEffect(() => {
     if (showScientific) {
       const timer = setTimeout(() => {
-        initializeScientificCalculator();
+        if (scientificRef.current && window.Desmos && !scientificCalculator.current) {
+          scientificCalculator.current = window.Desmos.ScientificCalculator(scientificRef.current, {
+            expressions: false,
+            settingsMenu: false,
+            border: false
+          });
+        }
       }, 100);
       return () => clearTimeout(timer);
     } else if (scientificCalculator.current) {
@@ -86,56 +76,47 @@ const TestSubmission = () => {
     }
   }, [showScientific]);
 
+  // Fetch test and set timer for first module
+  useEffect(() => {
+    checkTestAccess();
+    // eslint-disable-next-line
+  }, [id]);
+
   const checkTestAccess = async () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/v1/test/${id}/access`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      
       if (response.ok && data.canTake) {
         fetchTest();
       } else {
         alert(data.message || "You cannot take this test");
         navigate("/test-list");
       }
-    } catch (error) {
-      console.error("Error checking test access:", error);
+    } catch {
       alert("Error checking test access");
       navigate("/test-list");
     }
   };
 
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      handleSubmit(); // Auto-submit when time runs out
-    }
-  }, [timeLeft]);
-
   const fetchTest = async () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (response.ok) {
         setTest(data);
-        setAnswers(new Array(data.questions.length).fill(""));
+        setTimer(data.sections[0].modules[0].timer);
+        setModuleAnswers({ 0: { 0: new Array(data.sections[0].modules[0].questions.length).fill("") } });
       } else {
         alert("Failed to load test");
         navigate("/test-list");
       }
-    } catch (error) {
-      console.error("Error fetching test:", error);
+    } catch {
       alert("Error loading test");
       navigate("/test-list");
     } finally {
@@ -143,20 +124,131 @@ const TestSubmission = () => {
     }
   };
 
-  const handleAnswerChange = (questionIndex, answer) => {
-    const newAnswers = [...answers];
-    newAnswers[questionIndex] = answer;
-    setAnswers(newAnswers);
+  // Timer for module or break
+  useEffect(() => {
+    if (loading || inBreak) return;
+    if (timer <= 0) return;
+    const t = setTimeout(() => setTimer(timer - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timer, loading, inBreak]);
+
+  useEffect(() => {
+    if (!inBreak) return;
+    if (breakTime <= 0) return;
+    const t = setTimeout(() => setBreakTime(breakTime - 1), 1000);
+    return () => clearTimeout(t);
+  }, [breakTime, inBreak]);
+
+  // After break, go to next module/section
+  useEffect(() => {
+    if (inBreak && breakTime === 0) {
+      setInBreak(false);
+      goToNextModuleOrSection();
+    }
+    // eslint-disable-next-line
+  }, [breakTime, inBreak]);
+
+  // Timer auto-submit
+  useEffect(() => {
+    if (!inBreak && timer === 0 && !loading) {
+      handleModuleSubmit();
+    }
+    // eslint-disable-next-line
+  }, [timer, inBreak, loading]);
+
+  if (loading || !test) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
+  const section = test.sections[currentSection];
+  const module = section.modules[currentModule];
+  const answersArr = (moduleAnswers[currentSection] && moduleAnswers[currentSection][currentModule]) || new Array(module.questions.length).fill("");
+
+  // Handle answer change for current module
+ const handleAnswerChange = (qIdx, value) => {
+  setModuleAnswers(prev => {
+    const sec = { ...(prev[currentSection] || {}) };
+    const mod = [...(sec[currentModule] || new Array(module.questions.length).fill(""))];
+    mod[qIdx] = value;
+    return { ...prev, [currentSection]: { ...sec, [currentModule]: mod } };
+  });
+};
+
+
+  // Submit current module
+  const handleModuleSubmit = () => {
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      // If last module in section, check for break
+      if (currentModule === section.modules.length - 1) {
+        if (section.breakAfter && section.breakAfter.duration > 0) {
+          setInBreak(true);
+          setBreakTime(section.breakAfter.duration);
+        } else {
+          goToNextModuleOrSection();
+        }
+      } else {
+        // Next module in section
+        const nextModuleIdx = currentModule + 1;
+        setCurrentModule(nextModuleIdx);
+        setCurrentQuestion(0);
+        setTimer(section.modules[nextModuleIdx].timer);
+        setModuleAnswers(prev => {
+          const sec = { ...(prev[currentSection] || {}) };
+          if (!sec[nextModuleIdx]) {
+            sec[nextModuleIdx] = new Array(section.modules[nextModuleIdx].questions.length).fill("");
+          }
+          return { ...prev, [currentSection]: sec };
+        });
+      }
+    }, 500);
   };
 
-  const handleSubmit = async () => {
-    if (submitting) return;
-    
-    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-    
+  // Go to next section or finish
+  const goToNextModuleOrSection = () => {
+    if (currentModule === section.modules.length - 1) {
+      // Next section
+      if (currentSection === test.sections.length - 1) {
+        // All done, submit test
+        handleTestSubmit();
+      } else {
+        const nextSectionIdx = currentSection + 1;
+        setCurrentSection(nextSectionIdx);
+        setCurrentModule(0);
+        setCurrentQuestion(0);
+        setTimer(test.sections[nextSectionIdx].modules[0].timer);
+        setModuleAnswers(prev => {
+          const sec = { ...(prev[nextSectionIdx] || {}) };
+          if (!sec[0]) {
+            sec[0] = new Array(test.sections[nextSectionIdx].modules[0].questions.length).fill("");
+          }
+          return { ...prev, [nextSectionIdx]: sec };
+        });
+      }
+    } else {
+      // Should not happen, handled in handleModuleSubmit
+    }
+  };
+
+  // Final test submit
+  const handleTestSubmit = async () => {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
+      // Flatten all answers in order
+      const allAnswers = [];
+      for (let s = 0; s < test.sections.length; s++) {
+        for (let m = 0; m < test.sections[s].modules.length; m++) {
+          const modAns = (moduleAnswers[s] && moduleAnswers[s][m]) || new Array(test.sections[s].modules[m].questions.length).fill("");
+          allAnswers.push(...modAns);
+        }
+      }
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
       const response = await fetch("http://localhost:5000/api/v1/submission/submit", {
         method: "POST",
         headers: {
@@ -165,60 +257,59 @@ const TestSubmission = () => {
         },
         body: JSON.stringify({
           testId: id,
-          answers: answers,
+          answers: allAnswers,
           timeTaken: timeTaken,
         }),
       });
-
       const result = await response.json();
       if (response.ok) {
         navigate(`/test-results/${result.submissionId}`);
       } else {
         alert(result.message || "Failed to submit test");
       }
-    } catch (error) {
-      console.error("Error submitting test:", error);
+    } catch {
       alert("Error submitting test");
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Timer format
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getProgress = () => {
-    const answered = answers.filter(answer => answer !== "").length;
-    return Math.round((answered / test.questions.length) * 100);
-  };
+if (inBreak) {
+  return (
+    <div className="p-8 text-center">
+      <h2 className="text-2xl font-bold mb-4">Break Time</h2>
+      <div className="text-4xl mb-6">{breakTime}s</div>
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-      </div>
-    );
-  }
+      {breakTime > 0 ? (
+        <div className="text-gray-600">Relax! You can continue once the break ends.</div>
+      ) : (
+        <button
+          onClick={() => {
+            setInBreak(false);
+            goToNextModuleOrSection();
+          }}
+          className="px-8 py-3 bg-black text-white rounded hover:bg-gray-800"
+        >
+          Continue to Next Module →
+        </button>
+      )}
+    </div>
+  );
+}
 
-  if (!test) {
-    return (
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-bold text-red-600">Test not found</h2>
-      </div>
-    );
-  }
 
-  const handleSaveAndExit = () => {
-    handleSubmit();
-    navigate("/test-list");
-  };
+  const q = module.questions[currentQuestion];
 
   return (
     <div className="max-w-6xl mx-auto mt-6 p-6">
-      {/* Navbar with Calculator Buttons */}
+      {/* Calculator Buttons */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="flex justify-center space-x-4">
           <button
@@ -247,7 +338,7 @@ const TestSubmission = () => {
           >
             🧮 Scientific Calculator
           </button>
-          <button className="px-6 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={handleSaveAndExit}>Leave</button>
+          <button className="px-6 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={() => navigate("/test-list")}>Leave</button>
         </div>
       </div>
 
@@ -255,43 +346,12 @@ const TestSubmission = () => {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">{test.testname}</h1>
-          <div className={`text-lg font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-black'}`}>
-            ⏱️ {formatTime(timeLeft)}
+          <div className={`text-lg font-bold ${timer < 60 ? 'text-red-600' : 'text-black'}`}>
+            ⏱️ {formatTime(timer)}
           </div>
         </div>
-        
-        {/* Progress Bar */}
-        {/* <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Progress: {getProgress()}%</span>
-            <span>{answers.filter(a => a !== "").length}/{test.questions.length} answered</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-black h-2 rounded-full transition-all duration-300"
-              style={{ width: `${getProgress()}%` }}
-            ></div>
-          </div>
-        </div> */}
-
-        {/* Question Navigation */}
-        {/* <div className="flex flex-wrap gap-2 mb-4">
-          {test.questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentQuestion(index)}
-              className={`w-10 h-10 rounded-full text-sm font-medium ${
-                currentQuestion === index
-                  ? "bg-black text-white"
-                  : answers[index] !== ""
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div> */}
+        <div className="mb-2 font-semibold">Section: {section.sectionName}</div>
+        <div className="mb-2 font-semibold">Module: {module.moduleName}</div>
       </div>
 
       {/* Question and Calculator Layout */}
@@ -301,18 +361,18 @@ const TestSubmission = () => {
           showDesmos || showScientific ? "w-1/2" : "w-full"
         }`}>
           <div className="mb-4">
-            <span className="text-sm text-gray-500">Question {currentQuestion + 1} of {test.questions.length}</span>
+            <span className="text-sm text-gray-500">Question {currentQuestion + 1} of {module.questions.length}</span>
             <h2 className="text-xl font-semibold text-gray-800 mt-2">
-              {test.questions[currentQuestion].question}
+              {q.question}
             </h2>
           </div>
 
           <div className="space-y-3">
-            {test.questions[currentQuestion].options.map((option, optionIndex) => (
+            {q.options.map((option, optionIndex) => (
               <label
                 key={optionIndex}
                 className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                  answers[currentQuestion] === option
+                  answersArr[currentQuestion] === option
                     ? "border-black bg-black-50"
                     : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                 }`}
@@ -321,8 +381,8 @@ const TestSubmission = () => {
                   type="radio"
                   name={`question-${currentQuestion}`}
                   value={option}
-                  checked={answers[currentQuestion] === option}
-                  onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                  checked={answersArr[currentQuestion] === option}
+                  onChange={() => handleAnswerChange(currentQuestion, option)}
                   className="mr-3"
                 />
                 <span className="text-gray-700">{option}</span>
@@ -352,7 +412,6 @@ const TestSubmission = () => {
                 ></div>
               </div>
             )}
-            
             {showScientific && (
               <div className="h-full">
                 <div className="flex justify-between items-center mb-4">
@@ -375,47 +434,45 @@ const TestSubmission = () => {
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center">
-          <button
-            onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
-            disabled={currentQuestion === 0}
-            className="px-6 py-2 bg-gray-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-          >
-            ← Previous
-          </button>
+ {/* Navigation Buttons */}
+<div className="bg-white rounded-lg shadow-md p-6">
+  <div className="flex justify-between items-center">
+    {/* Previous */}
+    {currentQuestion > 0 && (
+      <button
+        onClick={() => setCurrentQuestion(currentQuestion - 1)}
+        className="px-6 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+      >
+        ← Previous
+      </button>
+    )}
 
-          <div className="flex space-x-4">
-            {currentQuestion < test.questions.length - 1 ? (
-              <button
-                onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                className="px-6 py-2 bg-black text-white rounded hover:bg-black"
-              >
-                Next →
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-              >
-                {submitting ? "Submitting..." : "Submit Test"}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+    {/* Spacer if no previous */}
+    {currentQuestion === 0 && <div></div>}
 
-      {/* Warning for unanswered questions */}
-      {/* {answers.some(answer => answer === "") && (
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800">
-            ⚠️ You have {answers.filter(a => a === "").length} unanswered questions. 
-            You can submit anyway, but unanswered questions will be marked as incorrect.
-          </p>
-        </div>
-      )} */}
+    {/* Next / Submit */}
+    {currentQuestion < module.questions.length - 1 ? (
+      <button
+        onClick={() => setCurrentQuestion(currentQuestion + 1)}
+        disabled={answersArr[currentQuestion] === ""}
+        className="px-6 py-2 bg-black text-white rounded hover:bg-black disabled:opacity-50"
+      >
+        Next →
+      </button>
+    ) : (
+      <button
+        onClick={handleModuleSubmit}
+        disabled={submitting || answersArr[currentQuestion] === ""}
+        className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+      >
+        {currentModule === section.modules.length - 1 && currentSection === test.sections.length - 1
+          ? "Submit Test"
+          : "Submit Module"}
+      </button>
+    )}
+  </div>
+</div>
+
     </div>
   );
 };

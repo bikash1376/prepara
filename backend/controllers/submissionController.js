@@ -19,28 +19,33 @@ export const submitTest = async (req, res) => {
       return res.status(404).json({ message: "Test not found" });
     }
 
+    // Flatten all questions in order
+    const allQuestions = [];
+    test.sections.forEach(section => {
+      section.modules.forEach(module => {
+        module.questions.forEach(q => allQuestions.push(q));
+      });
+    });
+
     // Calculate score and generate detailed review
     const reviewAnswers = [];
     let correctCount = 0;
 
-    for (let i = 0; i < test.questions.length; i++) {
-      const question = test.questions[i];
+    for (let i = 0; i < allQuestions.length; i++) {
+      const question = allQuestions[i];
       const userAnswer = answers[i] || '';
       const isCorrect = userAnswer === question.answer;
-      
       if (isCorrect) correctCount++;
 
       // Use custom explanation if available, otherwise generate default
       let explanation = '';
       if (question.explanation && question.explanation.trim() !== '') {
-        // Use custom explanation from the question
         if (isCorrect) {
           explanation = `✅ Correct! ${question.explanation}`;
         } else {
           explanation = `❌ Incorrect. You selected "${userAnswer}", but the correct answer is "${question.answer}". ${question.explanation}`;
         }
       } else {
-        // Fallback to default explanation
         if (isCorrect) {
           explanation = `✅ Correct! "${question.answer}" is the right answer.`;
         } else {
@@ -59,7 +64,7 @@ export const submitTest = async (req, res) => {
       });
     }
 
-    const totalQuestions = test.questions.length;
+    const totalQuestions = allQuestions.length;
     const score = correctCount;
     const percentage = Math.round((correctCount / totalQuestions) * 100);
 
