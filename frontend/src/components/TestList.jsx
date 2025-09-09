@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const TestList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,7 +14,13 @@ const TestList = () => {
 
   const fetchTestsWithStatus = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
+      if (!token) {
+        console.error("No authentication token available");
+        setTests([]);
+        return;
+      }
+      
       const response = await fetch("http://localhost:5000/api/v1/test/with-status", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -20,12 +28,14 @@ const TestList = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        setTests(data);
+        setTests(Array.isArray(data) ? data : []);
       } else {
-        console.error("Failed to fetch tests");
+        console.error("Failed to fetch tests:", data.message || "Unknown error");
+        setTests([]);
       }
     } catch (error) {
       console.error("Error fetching tests:", error);
+      setTests([]);
     } finally {
       setLoading(false);
     }

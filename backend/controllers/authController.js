@@ -1,103 +1,108 @@
+import { createClerkClient } from '@clerk/backend';
 import User from '../models/User.js';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import passport from 'passport';
 
-// ✅ Email/password signup
-export const signup = async (req, res) => {
-  const { name, email, password, role } = req.body;
-
-  try {
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    // ⚠️ Secure role assignment: only allow "student" or "admin"
-    const validRoles = ["student", "admin"];
-    const assignedRole = validRoles.includes(role) ? role : "student";
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashed,
-      role: assignedRole,
-    });
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET
-    );
-
-    res.json({ token, user });
-  } catch (err) {
-    console.error("Signup error:", err);
-    res.status(500).json({ message: "Signup failed" });
-  }
-};
-
-// ✅ Email/password login
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user || !user.password) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET
-    );
-
-    res.json({ token, user });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Login failed" });
-  }
-};
-
-// ✅ Google OAuth (using passport.js)
-export const googleAuthRedirect = passport.authenticate("google", {
-  scope: ["profile", "email"],
+// Initialize Clerk client
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-export const googleAuthCallback = (req, res, next) => {
-  passport.authenticate("google", async (err, user) => {
-    console.log("Google OAuth callback - Error:", err);
-    console.log("Google OAuth callback - User:", user);
-
-    if (err) {
-      console.error("Google OAuth error:", err);
-      return res.redirect("http://localhost:5173/login?error=oauth_error");
+// Set user role in Clerk metadata
+export const setUserRole = async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    
+    // Validate role
+    const validRoles = ["student", "admin"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role. Must be 'student' or 'admin'" });
     }
 
-    if (!user) {
-      console.error("Google OAuth - No user returned");
-      return res.redirect("http://localhost:5173/login?error=no_user");
-    }
+    // Update user metadata in Clerk
+    await clerkClient.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        role: role
+      }
+    });
 
-    try {
-      const token = jwt.sign(
-        { id: user._id, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
+    // Also update in your MongoDB if you want to keep local records
+    await User.findOneAndUpdate(
+      { clerkId: userId },
+      { 
+        role: role,
+        clerkId: userId
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: "Role updated successfully", role });
+  } catch (err) {
+    console.error("Set role error:", err);
+    res.status(500).json({ message: "Failed to set user role" });
+  }
+};
+
+// Get user profile with role
+export const getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.auth;
+    
+    // Get user from Clerk
+    const clerkUser = await clerkClient.users.getUser(userId);
+    
+    // Get role from metadata, default to 'student'
+    const role = clerkUser.publicMetadata?.role || 'student';
+    
+    // Update/create user in MongoDB
+    const user = await User.findOneAndUpdate(
+      { clerkId: userId },
+      { 
+        clerkId: userId,
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        name: clerkUser.firstName + ' ' + clerkUser.lastName,
+        role: role
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ 
+      user: {
+        id: userId,
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        name: clerkUser.firstName + ' ' + clerkUser.lastName,
+        role: role
+      }
+    });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    res.status(500).json({ message: "Failed to get user profile" });
+  }
+};
+
+// Sync user data from Clerk webhook
+export const syncUser = async (req, res) => {
+  try {
+    const { data, type } = req.body;
+    
+    if (type === 'user.created' || type === 'user.updated') {
+      const { id, email_addresses, first_name, last_name, public_metadata } = data;
+      
+      const role = public_metadata?.role || 'student';
+      
+      await User.findOneAndUpdate(
+        { clerkId: id },
+        {
+          clerkId: id,
+          email: email_addresses[0]?.email_address,
+          name: `${first_name || ''} ${last_name || ''}`.trim(),
+          role: role
+        },
+        { upsert: true, new: true }
       );
-
-      console.log("Generated JWT token for user:", user.email, "with role:", user.role);
-
-      // Redirect to frontend with token
-      res.redirect(`http://localhost:5173/auth-success?token=${token}`);
-    } catch (tokenError) {
-      console.error("JWT token generation error:", tokenError);
-      res.redirect("http://localhost:5173/login?error=token_error");
     }
-  })(req, res, next);
+    
+    res.json({ message: "User synced successfully" });
+  } catch (err) {
+    console.error("Sync user error:", err);
+    res.status(500).json({ message: "Failed to sync user" });
+  }
 };

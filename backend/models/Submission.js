@@ -11,7 +11,7 @@ const submissionAnswerSchema = new mongoose.Schema({
 });
 
 const submissionSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true }, // Clerk user ID is a string
     testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test', required: true },
     testName: { type: String, required: true },
     answers: [submissionAnswerSchema],

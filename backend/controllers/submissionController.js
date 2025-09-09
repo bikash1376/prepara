@@ -6,7 +6,7 @@ import User from '../models/User.js';
 export const submitTest = async (req, res) => {
   try {
     const { testId, answers, timeTaken } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     // Validate input
     if (!testId || !answers || !Array.isArray(answers)) {
@@ -101,16 +101,18 @@ export const submitTest = async (req, res) => {
 // Get user's submission history
 export const getSubmissionHistory = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
+    console.log("Fetching submission history for user:", userId);
     
     const submissions = await Submission.find({ userId })
       .select('testName score totalQuestions percentage submittedAt timeTaken')
       .sort({ submittedAt: -1 });
 
+    console.log("Found submissions:", submissions.length);
     res.json(submissions);
   } catch (error) {
     console.error('Get submission history error:', error);
-    res.status(500).json({ message: "Failed to get submission history" });
+    res.status(500).json({ message: "Failed to get submission history", error: error.message });
   }
 };
 
@@ -118,7 +120,7 @@ export const getSubmissionHistory = async (req, res) => {
 export const getSubmissionReview = async (req, res) => {
   try {
     const { submissionId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     const submission = await Submission.findOne({ 
       _id: submissionId, 

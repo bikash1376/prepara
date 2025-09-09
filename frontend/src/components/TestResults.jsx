@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const TestResults = () => {
   const { submissionId } = useParams();
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showReview, setShowReview] = useState(false);
@@ -14,7 +16,7 @@ const TestResults = () => {
 
   const fetchResults = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       const response = await fetch(`http://localhost:5000/api/v1/submission/review/${submissionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,

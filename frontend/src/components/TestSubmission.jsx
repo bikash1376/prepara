@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const TestSubmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [test, setTest] = useState(null);
   const [currentSection, setCurrentSection] = useState(0);
   const [currentModule, setCurrentModule] = useState(0);
@@ -84,7 +86,7 @@ const TestSubmission = () => {
 
   const checkTestAccess = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       const response = await fetch(`http://localhost:5000/api/v1/test/${id}/access`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -103,7 +105,7 @@ const TestSubmission = () => {
 
   const fetchTest = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       const response = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -239,7 +241,7 @@ const TestSubmission = () => {
   const handleTestSubmit = async () => {
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       // Flatten all answers in order
       const allAnswers = [];
       for (let s = 0; s < test.sections.length; s++) {

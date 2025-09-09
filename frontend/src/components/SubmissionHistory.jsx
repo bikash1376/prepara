@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const SubmissionHistory = () => {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,7 +14,13 @@ const SubmissionHistory = () => {
 
   const fetchSubmissionHistory = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
+      if (!token) {
+        console.error("No authentication token available");
+        setSubmissions([]);
+        return;
+      }
+      
       const response = await fetch("http://localhost:5000/api/v1/submission/history", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -20,13 +28,14 @@ const SubmissionHistory = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        setSubmissions(data);
+        setSubmissions(Array.isArray(data) ? data : []);
       } else {
-        alert("Failed to load submission history");
+        console.error("Failed to load submission history:", data.message || "Unknown error");
+        setSubmissions([]);
       }
     } catch (error) {
       console.error("Error fetching submission history:", error);
-      alert("Error loading submission history");
+      setSubmissions([]);
     } finally {
       setLoading(false);
     }

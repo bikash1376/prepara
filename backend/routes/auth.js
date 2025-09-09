@@ -1,19 +1,16 @@
 import express from 'express';
 import {
-  signup,
-  login,
-  googleAuthCallback,
-  googleAuthRedirect
+  setUserRole,
+  getUserProfile,
+  syncUser
 } from '../controllers/authController.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// Email/password
-router.post('/signup', signup);
-router.post('/login', login);
-
-// Google OAuth
-router.get('/google', googleAuthRedirect); // Redirect to Google
-router.get('/google/callback', googleAuthCallback); // Google callback
+// Clerk authentication routes
+router.post('/set-role', protect, setUserRole);
+router.get('/profile', protect, getUserProfile);
+router.post('/webhook', syncUser); // Clerk webhook endpoint
 
 export default router;

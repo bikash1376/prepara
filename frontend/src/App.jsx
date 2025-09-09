@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useUser, SignedIn, SignedOut } from "@clerk/clerk-react";
 
 import AddTest from "./components/AddTest";
 import TestViewer from "./components/TestViewer";
@@ -15,26 +16,61 @@ import Navbar from "./components/Navbar";
 import TestSubmission from "./components/TestSubmission";
 import TestResults from "./components/TestResults";
 import SubmissionHistory from "./components/SubmissionHistory";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// ✅ Protected home page
+// Protected home page with Clerk authentication
 const HomePage = () => {
+  const { user, isSignedIn } = useUser();
   const navigate = useNavigate();
-  const role = localStorage.getItem("role"); // read role
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login"); // redirect if not logged in
+    if (!isSignedIn) {
+      navigate("/login");
+      return;
     }
-  }, [navigate]);
+
+    if (user) {
+      const role = user.publicMetadata?.role;
+      if (!role) {
+        // User needs to select a role
+        navigate("/login");
+        return;
+      }
+
+      // Redirect to appropriate dashboard based on role
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/student/dashboard");
+      }
+    }
+  }, [isSignedIn, user, navigate]);
+
+  if (!isSignedIn || !user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Please sign in to continue</h1>
+          <Link
+            to="/login"
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const role = user.publicMetadata?.role;
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold mb-4">{localStorage.getItem("username") 
-    ? `Welcome ${localStorage.getItem("username")}` 
-    : "Welcome Guest"}</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Welcome {user.firstName || user.emailAddresses[0]?.emailAddress}!
+      </h1>
 
-      {/* ✅ Show Admin Dashboard link only if user is admin */}
+      {/* Show Admin Dashboard link only if user is admin */}
       {role === "admin" && (
         <Link
           to="/admin/dashboard"
@@ -44,25 +80,17 @@ const HomePage = () => {
         </Link>
       )}
 
-      {/* ✅ Show Student Dashboard link only if user is student */}
+      {/* Show Student Dashboard link only if user is student */}
       {role === "student" && (
         <>
-        {/* <Link
-          to="/student/dashboard"
-          className="mb-2 px-4 py-2 bg-green-600 text-white rounded"
-        >
-          Student Dashboard
-        </Link> */}
-        <TestList />
+          <Link
+            to="/student/dashboard"
+            className="mb-2 px-4 py-2 bg-green-600 text-white rounded"
+          >
+            Student Dashboard
+          </Link>
         </>
       )}
-
-      {/* Logout for both */}
-      {/* {localStorage.getItem("token") && (
-        <div className="mt-4">
-          <LogoutButton />
-        </div>
-      )} */}
     </div>
   );
 };
@@ -76,25 +104,93 @@ const AppContent = () => {
     <>
       {!hideNavbar && <Navbar />}
       <Routes>
+        {/* Student Routes - Protected */}
+        <Route 
+          path="/student/dashboard" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/test-viewer/:id" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <TestViewer />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/test-list" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <TestList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/test-submission/:id" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <TestSubmission />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/test-results/:submissionId" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <TestResults />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/submission-history" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <SubmissionHistory />
+            </ProtectedRoute>
+          } 
+        />
 
-        <Route path="/student/dashboard" element={<StudentDashboard />} />
-        {/* Admin */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/add-test" element={<AddTest />} />
-        <Route path="/admin/test-list" element={<AdminTestList />} />
-        <Route path="/admin/edit-test/:id" element={<EditTest />} />
+        {/* Admin Routes - Protected */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/add-test" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AddTest />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/test-list" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminTestList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/edit-test/:id" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EditTest />
+            </ProtectedRoute>
+          } 
+        />
 
-        {/* Student */}
-        <Route path="/test-viewer/:id" element={<TestViewer />} />
-        <Route path="/test-list" element={<TestList />} />
-        <Route path="/test-submission/:id" element={<TestSubmission />} />
-        <Route path="/test-results/:submissionId" element={<TestResults />} />
-        <Route path="/submission-history" element={<SubmissionHistory />} />
-
-        {/* Auth */}
-        <Route path="/login" element={<AuthForm mode="login" />} />
-        <Route path="/signup" element={<AuthForm mode="signup" />} />
-        <Route path="/auth-success" element={<AuthSuccess />} />
+        {/* Public Auth Routes */}
+        <Route path="/login/*" element={<AuthForm mode="login" />} />
+        <Route path="/signup/*" element={<AuthForm mode="signup" />} />
 
         {/* Default */}
         <Route path="/" element={<HomePage />} />

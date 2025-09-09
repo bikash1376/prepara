@@ -1,25 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import AdminDashboard from "./AdminDashboard";
 
 const AdminTestList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   const fetchTests = async () => {
     setLoading(true);
     try {
+      const token = await getToken();
       const res = await fetch("http://localhost:5000/api/v1/admin/tests", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await res.json();
-      setTests(data);
+      setTests(Array.isArray(data) ? data : []);
     } catch (error) {
-      setMessage("Error fetching tests", error);
+      console.error("Error fetching tests:", error);
+      setMessage("Error fetching tests");
+      setTests([]);
     }
     setLoading(false);
   };
@@ -32,10 +37,11 @@ const AdminTestList = () => {
     if (!window.confirm("Are you sure you want to delete this test?")) return;
     setLoading(true);
     try {
+      const token = await getToken();
       const res = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (res.ok) {
@@ -45,7 +51,8 @@ const AdminTestList = () => {
         setMessage("Error deleting test");
       }
     } catch (error) {
-      setMessage("Error deleting test", error.message);
+      console.error("Error deleting test:", error);
+      setMessage("Error deleting test");
     }
     setLoading(false);
   };

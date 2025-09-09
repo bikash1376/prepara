@@ -7,7 +7,7 @@ const StudentDashboard = () => {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">🎓 Student Dashboard</h2>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col w-fit gap-4">
         <Link
           to="/test-list"
           className="px-4 py-2 bg-black text-white rounded"
@@ -30,7 +30,7 @@ const StudentDashboard = () => {
         </Link> */}
 
         <div>
-          <LogoutButton />
+          {/* <LogoutButton /> */}
         </div>
       </div>
     </div>

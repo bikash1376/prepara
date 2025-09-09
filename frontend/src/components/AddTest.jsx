@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "" };
 const emptyModule = { moduleName: "", timer: 600, questions: [ { ...emptyQuestion } ] };
@@ -24,6 +25,7 @@ const deepCopySection = (s = emptySection) => ({
 });
 
 const AddTest = () => {
+  const { getToken } = useAuth();
   const [testname, setTestname] = useState("");
   const [sections, setSections] = useState([ { ...emptySection } ]);
   const [loading, setLoading] = useState(false);
@@ -140,7 +142,7 @@ const AddTest = () => {
     setLoading(true);
     setMessage("");
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       const res = await fetch("http://localhost:5000/api/v1/test/add", {
         method: "POST",
         headers: {

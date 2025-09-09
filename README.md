@@ -34,7 +34,8 @@ Checking..
 - [✔️] Build test creation and editing (Admin)  
 - [✔️] Build test-taking functionality (Student)  
 - [✔️] Implement score retrieval (Student)  
-- [ ] Test APIs with Postman/Thunder Client  
+- [✔️] Test APIs with Postman/Thunder Client  
+- [] Thank You Windsurf
 
 
 ...write frontend

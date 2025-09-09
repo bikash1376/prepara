@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import LogoutButton from "./LogoutButton";
 
 const AdminDashboard = () => {
@@ -7,37 +7,50 @@ const AdminDashboard = () => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [userSubmissions, setUserSubmissions] = useState({});
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
-  // const navigate = useNavigate();
+  const { getToken } = useAuth();
 
   const fetchUsers = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:5000/api/v1/admin/users", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setUsers(data);
+    try {
+      const token = await getToken();
+      const res = await fetch("http://localhost:5000/api/v1/admin/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    }
   };
 
   const deleteUser = async (id) => {
-    const token = localStorage.getItem("token");
-    await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchUsers();
+    try {
+      const token = await getToken();
+      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
   };
 
   const changeRole = async (id, role) => {
-    const token = localStorage.getItem("token");
-    await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ role }),
-    });
-    fetchUsers();
+    try {
+      const token = await getToken();
+      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Error changing role:", error);
+    }
   };
 
   const handleViewSubmissions = async (userId) => {
@@ -47,16 +60,21 @@ const AdminDashboard = () => {
     }
     setLoadingSubmissions(true);
     setExpandedUser(userId);
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `http://localhost:5000/api/v1/admin/submissions/${userId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    const data = await res.json();
-    setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
-    setLoadingSubmissions(false);
+    try {
+      const token = await getToken();
+      const res = await fetch(
+        `http://localhost:5000/api/v1/admin/submissions/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
+      setLoadingSubmissions(false);
+    } catch (error) {
+      console.error("Error fetching submissions:", error);
+      setLoadingSubmissions(false);
+    }
   };
 
   useEffect(() => {

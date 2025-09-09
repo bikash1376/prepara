@@ -75,12 +75,16 @@ export const getAllTests = async (req, res) => {
 // Get all tests with submission status for authenticated user
 export const getAllTestsWithStatus = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
+        console.log("Fetching tests for user:", userId);
+        
         const tests = await Test.find().select('_id testname');
+        console.log("Found tests:", tests.length);
         
         // Get user's submissions
         const userSubmissions = await Submission.find({ userId }).select('testId');
         const submittedTestIds = userSubmissions.map(sub => sub.testId.toString());
+        console.log("User submissions:", submittedTestIds);
         
         // Add status to each test
         const testsWithStatus = tests.map(test => ({
@@ -89,17 +93,18 @@ export const getAllTestsWithStatus = async (req, res) => {
             isCompleted: submittedTestIds.includes(test._id.toString())
         }));
         
+        console.log("Returning tests with status:", testsWithStatus);
         res.json(testsWithStatus);
     } catch (error) {
         console.error("Error fetching tests with status:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ message: "Failed to fetch tests", error: error.message });
     }
 }
 
 // Check if user can take a specific test
 export const checkTestAccess = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
         const testId = req.params.id;
         
         // Check if user has already submitted this test

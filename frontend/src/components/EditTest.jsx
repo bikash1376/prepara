@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "" };
 const emptyModule = { moduleName: "", timer: 600, questions: [ { ...emptyQuestion } ] };
@@ -25,6 +26,7 @@ const deepCopySection = (s = emptySection) => ({
 
 const EditTest = () => {
   const { id } = useParams();
+  const { getToken } = useAuth();
   const [testname, setTestname] = useState("");
   const [sections, setSections] = useState([ { ...emptySection } ]);
   const [loading, setLoading] = useState(false);
@@ -32,21 +34,24 @@ const EditTest = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => {
+    const fetchTestData = async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        const response = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
         setTestname(data.testname);
         setSections(data.sections && data.sections.length > 0 ? data.sections : [ { ...emptySection } ]);
         setLoading(false);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error loading test:", error);
         setMessage("Error loading test");
         setLoading(false);
-      });
+      }
+    };
+    fetchTestData();
   }, [id]);
 
   // Section handlers
@@ -159,7 +164,7 @@ const EditTest = () => {
     setLoading(true);
     setMessage("");
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       const res = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
         method: "PUT",
         headers: {

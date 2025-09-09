@@ -1,166 +1,125 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { SignIn, SignUp, useUser, useAuth } from "@clerk/clerk-react";
 
 const AuthForm = ({ mode = "login" }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const { isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [role, setRole] = useState("student");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("role");
-    if (!token) {
-      localStorage.removeItem("username");
-    }
-    if (token && userRole) {
-      // User is already logged in, redirect to appropriate dashboard
-      if (userRole === "admin") {
-        navigate("/admin/dashboard", { replace: true });
-      } else {
-        navigate("/student/dashboard", { replace: true });
+    if (isSignedIn && user) {
+      const userRole = user.publicMetadata?.role;
+      if (userRole) {
+        // User already has a role, redirect to appropriate dashboard
+        if (userRole === "admin") {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/student/dashboard", { replace: true });
+        }
       }
-      return;
     }
+  }, [isSignedIn, user, navigate]);
 
-    // Check for OAuth errors in URL params
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get("error");
+  const handleRoleSelection = async () => {
+    if (!user) return;
     
-    if (error) {
-      const errorMessages = {
-        oauth_error: "Google authentication failed. Please try again.",
-        no_user: "Google authentication did not return user information.",
-        token_error: "Failed to generate authentication token.",
-        google: "Google authentication was cancelled or failed."
-      };
-      
-      setMessage(errorMessages[error] || "Authentication error occurred.");
-      
-      // Clear the error from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [navigate]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     setLoading(true);
     setMessage("");
+    
     try {
-      const endpoint =
-        mode === "signup" ? "/api/v1/auth/signup" : "/api/v1/auth/login";
-      const body =
-        mode === "signup"
-          ? { name, email, password, role }
-          : { email, password };
-
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const token = await getToken();
+      const response = await fetch("http://localhost:5000/api/v1/auth/set-role", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          role: role
+        })
       });
-      const data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.user.role);
-        localStorage.setItem("username", data.user.name || "");
-        setMessage("Success! Redirecting...");
+      const data = await response.json();
 
-        // ✅ Redirect based on role
-        if (data.user.role === "admin") {
-          window.location.href = "/admin/test-list";
+      if (response.ok) {
+        // Force refresh user data to get updated metadata
+        await user.reload();
+        
+        // Redirect based on role
+        if (role === "admin") {
+          navigate("/admin/dashboard");
         } else {
-          window.location.href = "/student/dashboard";
+          navigate("/student/dashboard");
         }
       } else {
-        setMessage(data.message || "Error");
+        setMessage(data.message || "Failed to set role");
       }
     } catch (err) {
-      setMessage("Network error", err.message);
+      console.error("Role selection error:", err);
+      setMessage("Failed to set role. Please try again.");
     }
+    
     setLoading(false);
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/api/v1/auth/google";
-  };
-
-  // Show username if logged in
-  const username = localStorage.getItem("username");
-
-  return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      {username && (
-        <div className="mb-2 text-green-700 text-center font-semibold">
-          Welcome, {username}!
-        </div>
-      )}
-      <h2 className="text-2xl font-bold mb-4">
-        {mode === "signup" ? "Sign Up" : "Login"}
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {mode === "signup" && (
-          <>
-            <input
-              type="text"
-              className="w-full border rounded px-3 py-2 mb-2"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <select
-              className="w-full border rounded px-3 py-2 mb-2"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="student">Student</option>
-              <option value="admin">Admin</option>
-            </select>
-          </>
-        )}
-        <input
-          type="email"
-          className="w-full border rounded px-3 py-2 mb-2"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
+  // If user is signed in but doesn't have a role, show role selection
+  if (isSignedIn && user && !user.publicMetadata?.role) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h2 className="text-2xl font-bold mb-4">Select Your Role</h2>
+        <p className="mb-4 text-gray-600">
+          Welcome {user.firstName}! Please select your role to continue:
+        </p>
+        
+        <select
           className="w-full border rounded px-3 py-2 mb-4"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
+          <option value="student">Student</option>
+          <option value="admin">Admin</option>
+        </select>
+        
         <button
-          type="submit"
-          className="w-full px-4 py-2 bg-black text-white rounded mb-2"
+          onClick={handleRoleSelection}
+          className="w-full px-4 py-2 bg-black text-white rounded"
           disabled={loading}
         >
-          {loading
-            ? "Processing..."
-            : mode === "signup"
-            ? "Sign Up"
-            : "Login"}
+          {loading ? "Setting Role..." : "Continue"}
         </button>
-      </form>
-      <button
-        onClick={handleGoogleLogin}
-        className="w-full px-4 py-2 bg-red-500 text-white rounded"
-      >
-        Continue with Google
-      </button>
-      
-      {message && (
-        <div className="mt-4 text-center text-red-600">{message}</div>
+        
+        {message && (
+          <div className="mt-4 text-center text-red-600">{message}</div>
+        )}
+      </div>
+    );
+  }
+
+  // Show Clerk's built-in authentication components
+  return (
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+      {mode === "signup" ? (
+        <SignUp 
+          routing="path" 
+          path="/signup"
+          signInUrl="/login"
+          afterSignUpUrl="/"
+          fallbackRedirectUrl="/"
+        />
+      ) : (
+        <SignIn 
+          routing="path" 
+          path="/login"
+          signUpUrl="/signup"
+          afterSignInUrl="/"
+          fallbackRedirectUrl="/"
+        />
       )}
     </div>
   );
