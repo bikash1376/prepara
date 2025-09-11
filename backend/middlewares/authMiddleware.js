@@ -9,6 +9,12 @@ const clerkClient = createClerkClient({
 
 export const protect = async (req, res, next) => {
   try {
+    // Check if CLERK_SECRET_KEY is set
+    if (!process.env.CLERK_SECRET_KEY) {
+      console.error("CLERK_SECRET_KEY environment variable is not set");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
     // Use Clerk's built-in middleware for token verification
     ClerkExpressRequireAuth()(req, res, async (err) => {
       if (err) {

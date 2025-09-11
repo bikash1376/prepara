@@ -1,108 +1,175 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
 
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Cross1Icon,
-  DesktopIcon,
-  BookmarkIcon,
-  QuestionMarkCircledIcon
-} from "@radix-ui/react-icons";
+import { useParams, useNavigate } from "react-router-dom";
+
+import { useAuth } from "@clerk/clerk-react";
+import { Badge } from "./ui/badge";
+import DirectionsDialog from "./DirectionsDialog";
+import ExamNavbar from "./ExamNavbar";
 
 const TestSubmission = () => {
   const { id } = useParams();
+
   const navigate = useNavigate();
+
   const { getToken } = useAuth();
+
   const [test, setTest] = useState(null);
+
   const [currentSection, setCurrentSection] = useState(0);
+
   const [currentModule, setCurrentModule] = useState(0);
-  const [moduleAnswers, setModuleAnswers] = useState({});
+
+  const [moduleAnswers, setModuleAnswers] = useState({}); // {sectionIdx: {moduleIdx: [answers]}}
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
+
   const [timer, setTimer] = useState(0);
+
   const [breakTime, setBreakTime] = useState(0);
+
   const [inBreak, setInBreak] = useState(false);
+
   const [loading, setLoading] = useState(true);
+
   const [submitting, setSubmitting] = useState(false);
+
   const [showDesmos, setShowDesmos] = useState(false);
+
   const [showScientific, setShowScientific] = useState(false);
+
   const desmosRef = useRef(null);
+
   const scientificRef = useRef(null);
+
   const desmosCalculator = useRef(null);
+
   const scientificCalculator = useRef(null);
+
   const [startTime] = useState(Date.now());
 
-  // Load Desmos API script
+  const [showBreak, setShowBreak] = useState(false);
+  const [showTimer, setShowTimer] = useState(true);
+
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
+
+  // Load Desmos API
+
   useEffect(() => {
     if (window.Desmos) return;
+
     const script = document.createElement("script");
+
     const apiKey = "dcb31709b452b1cf9dc26972add0fda6";
+
     script.src = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`;
+
     script.async = true;
+
     document.head.appendChild(script);
   }, []);
 
-  // Initialize Desmos and Scientific Calculators
+  // Desmos calculator init
+
   useEffect(() => {
-    const initCalculator = (show, ref, type, calcRef) => {
-      if (show) {
-        const timerId = setTimeout(() => {
-          if (ref.current && window.Desmos && !calcRef.current) {
-            calcRef.current = new window.Desmos[type](ref.current, {
-              expressions: type === "GraphingCalculator",
+    if (showDesmos) {
+      const timer = setTimeout(() => {
+        if (desmosRef.current && window.Desmos && !desmosCalculator.current) {
+          desmosCalculator.current = window.Desmos.GraphingCalculator(
+            desmosRef.current,
+            {
+              expressions: true,
+
               settingsMenu: true,
+
               zoomButtons: true,
+
               expressionsTopbar: false,
+
               pointsOfInterest: false,
+
               trace: false,
+
               border: false,
+
               lockViewport: false,
+
               expressionsCollapsed: true,
-            });
-          }
-        }, 100);
-        return () => clearTimeout(timerId);
-      } else if (calcRef.current) {
-        calcRef.current.destroy();
-        calcRef.current = null;
-      }
-    };
+            }
+          );
+        }
+      }, 100);
 
-    initCalculator(showDesmos, desmosRef, "GraphingCalculator", desmosCalculator);
-    initCalculator(showScientific, scientificRef, "ScientificCalculator", scientificCalculator);
-  }, [showDesmos, showScientific]);
+      return () => clearTimeout(timer);
+    } else if (desmosCalculator.current) {
+      desmosCalculator.current.destroy();
 
-  // Fetch test details
+      desmosCalculator.current = null;
+    }
+  }, [showDesmos]);
+
+  // Scientific calculator init
+
+  useEffect(() => {
+    if (showScientific) {
+      const timer = setTimeout(() => {
+        if (
+          scientificRef.current &&
+          window.Desmos &&
+          !scientificCalculator.current
+        ) {
+          scientificCalculator.current = window.Desmos.ScientificCalculator(
+            scientificRef.current,
+            {
+              expressions: false,
+
+              settingsMenu: false,
+
+              border: false,
+            }
+          );
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    } else if (scientificCalculator.current) {
+      scientificCalculator.current.destroy();
+
+      scientificCalculator.current = null;
+    }
+  }, [showScientific]);
+
+  // Fetch test and set timer for first module
+
   useEffect(() => {
     checkTestAccess();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // eslint-disable-next-line
   }, [id]);
 
-  // Auth check and test fetch logic (kept as is)
   const checkTestAccess = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`http://localhost:5000/api/v1/test/${id}/access`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      const response = await fetch(
+        `http://localhost:5000/api/v1/test/${id}/access`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       const data = await response.json();
+
       if (response.ok && data.canTake) {
         fetchTest();
       } else {
         alert(data.message || "You cannot take this test");
+
         navigate("/test-list");
       }
     } catch {
       alert("Error checking test access");
+
       navigate("/test-list");
     }
   };
@@ -110,144 +177,243 @@ const TestSubmission = () => {
   const fetchTest = async () => {
     try {
       const token = await getToken();
+
       const response = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await response.json();
+
       if (response.ok) {
         setTest(data);
+
         setTimer(data.sections[0].modules[0].timer);
-        setModuleAnswers({ 0: { 0: new Array(data.sections[0].modules[0].questions.length).fill("") } });
+
+        setModuleAnswers({
+          0: {
+            0: new Array(data.sections[0].modules[0].questions.length).fill(""),
+          },
+        });
       } else {
         alert("Failed to load test");
+
         navigate("/test-list");
       }
     } catch {
       alert("Error loading test");
+
       navigate("/test-list");
     } finally {
       setLoading(false);
     }
   };
 
-  // Timer logic for module and break (kept as is)
+  // Timer for module or break
+
   useEffect(() => {
-    if (loading || inBreak || timer <= 0) return;
+    if (loading || inBreak) return;
+
+    if (timer <= 0) return;
+
     const t = setTimeout(() => setTimer(timer - 1), 1000);
+
     return () => clearTimeout(t);
   }, [timer, loading, inBreak]);
 
   useEffect(() => {
-    if (!inBreak || breakTime <= 0) return;
+    if (!inBreak) return;
+
+    if (breakTime <= 0) return;
+
     const t = setTimeout(() => setBreakTime(breakTime - 1), 1000);
+
     return () => clearTimeout(t);
   }, [breakTime, inBreak]);
+
+  // After break, go to next module/section
 
   useEffect(() => {
     if (inBreak && breakTime === 0) {
       setInBreak(false);
+
       goToNextModuleOrSection();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // eslint-disable-next-line
   }, [breakTime, inBreak]);
+
+  // Timer auto-submit
 
   useEffect(() => {
     if (!inBreak && timer === 0 && !loading) {
       handleModuleSubmit();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // eslint-disable-next-line
   }, [timer, inBreak, loading]);
+
+  if (loading || !test) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
+  const section = test.sections[currentSection];
+
+  const module = section.modules[currentModule];
+
+  const answersArr =
+    (moduleAnswers[currentSection] &&
+      moduleAnswers[currentSection][currentModule]) ||
+    new Array(module.questions.length).fill("");
+
+  // Handle answer change for current module
 
   const handleAnswerChange = (qIdx, value) => {
     setModuleAnswers((prev) => {
       const sec = { ...(prev[currentSection] || {}) };
+
       const mod = [
         ...(sec[currentModule] || new Array(module.questions.length).fill("")),
       ];
+
       mod[qIdx] = value;
+
       return { ...prev, [currentSection]: { ...sec, [currentModule]: mod } };
     });
   };
 
+  // Submit current module
+
   const handleModuleSubmit = () => {
     setSubmitting(true);
+
     setTimeout(() => {
       setSubmitting(false);
+
+      // If last module in section, check for break
+
       if (currentModule === section.modules.length - 1) {
-        if (section.breakAfter?.duration > 0) {
+        if (section.breakAfter && section.breakAfter.duration > 0) {
           setInBreak(true);
+
           setBreakTime(section.breakAfter.duration);
         } else {
           goToNextModuleOrSection();
         }
       } else {
+        // Next module in section
+
         const nextModuleIdx = currentModule + 1;
+
         setCurrentModule(nextModuleIdx);
+
         setCurrentQuestion(0);
+
         setTimer(section.modules[nextModuleIdx].timer);
+
         setModuleAnswers((prev) => {
           const sec = { ...(prev[currentSection] || {}) };
+
           if (!sec[nextModuleIdx]) {
             sec[nextModuleIdx] = new Array(
               section.modules[nextModuleIdx].questions.length
             ).fill("");
           }
+
           return { ...prev, [currentSection]: sec };
         });
       }
     }, 500);
   };
 
+  // Go to next section or finish
+
   const goToNextModuleOrSection = () => {
     if (currentModule === section.modules.length - 1) {
+      // Next section
+
       if (currentSection === test.sections.length - 1) {
+        // All done, submit test
+
         handleTestSubmit();
       } else {
         const nextSectionIdx = currentSection + 1;
+
         setCurrentSection(nextSectionIdx);
+
         setCurrentModule(0);
+
         setCurrentQuestion(0);
+
         setTimer(test.sections[nextSectionIdx].modules[0].timer);
+
         setModuleAnswers((prev) => {
           const sec = { ...(prev[nextSectionIdx] || {}) };
+
           if (!sec[0]) {
             sec[0] = new Array(
               test.sections[nextSectionIdx].modules[0].questions.length
             ).fill("");
           }
+
           return { ...prev, [nextSectionIdx]: sec };
         });
       }
+    } else {
+      // Should not happen, handled in handleModuleSubmit
     }
   };
 
+  // Final test submit
+
   const handleTestSubmit = async () => {
     setSubmitting(true);
+
     try {
       const token = await getToken();
+
+      // Flatten all answers in order
+
       const allAnswers = [];
+
       for (let s = 0; s < test.sections.length; s++) {
         for (let m = 0; m < test.sections[s].modules.length; m++) {
           const modAns =
             (moduleAnswers[s] && moduleAnswers[s][m]) ||
             new Array(test.sections[s].modules[m].questions.length).fill("");
+
           allAnswers.push(...modAns);
         }
       }
+
       const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      const response = await fetch("http://localhost:5000/api/v1/submission/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          testId: id,
-          answers: allAnswers,
-          timeTaken: timeTaken,
-        }),
-      });
+
+      const response = await fetch(
+        "http://localhost:5000/api/v1/submission/submit",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            testId: id,
+
+            answers: allAnswers,
+
+            timeTaken: timeTaken,
+          }),
+        }
+      );
+
       const result = await response.json();
+
       if (response.ok) {
         navigate(`/test-results/${result.submissionId}`);
       } else {
@@ -260,168 +426,225 @@ const TestSubmission = () => {
     }
   };
 
+  // Timer format
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
+
     const secs = seconds % 60;
+
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
-
-  // Main render logic
-  if (loading || !test) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
 
   if (inBreak) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Break Time</h2>
+
         <div className="text-4xl mb-6">{breakTime}s</div>
+
         {breakTime > 0 ? (
-          <div className="text-gray-600">Relax! You can continue once the break ends.</div>
+          <div className="text-gray-600">
+            Relax! You can continue once the break ends.
+          </div>
         ) : (
-          <Button onClick={() => goToNextModuleOrSection()}>
+          <button
+            onClick={() => {
+              setInBreak(false);
+
+              goToNextModuleOrSection();
+            }}
+            className="px-8 py-3 bg-black text-white rounded hover:bg-gray-800"
+          >
             Continue to Next Module →
-          </Button>
+          </button>
         )}
       </div>
     );
   }
 
-  const section = test.sections[currentSection];
-  const module = section.modules[currentModule];
   const q = module.questions[currentQuestion];
-  const answersArr = moduleAnswers[currentSection]?.[currentModule] || new Array(module.questions.length).fill("");
-
-  const questionNumber = currentQuestion + 1;
-  const totalQuestions = module.questions.length;
-  const questionLabel = `Question ${questionNumber} of ${totalQuestions}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      {/* Top Header */}
-      <div className="bg-white shadow-md p-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" className="text-gray-600 hover:text-gray-900" onClick={() => navigate("/test-list")}>Leave</Button>
-          <div className="font-semibold text-gray-800">
-            Section {currentSection + 1}, Module {currentModule + 1}: {section.sectionName}
-          </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className={`text-xl font-bold ${timer < 60 ? "text-red-600" : "text-black"}`}>
-            {formatTime(timer)}
-          </div>
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100"><BookmarkIcon /></Button>
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100"><QuestionMarkCircledIcon /></Button>
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100"><DesktopIcon /></Button>
-        </div>
-      </div>
+    <div className="max-w-full mx-auto mt-1 p-6">
+      {/* <div className="w-full mx-auto pt-1 p-6 bg-black"> */}
+      {/* Calculator Buttons */}
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 p-6 gap-6">
-        {/* Question Panel */}
-        <div className="flex-1 bg-white rounded-lg shadow-md p-6 overflow-auto">
-          <div className="flex justify-between items-center mb-4 border-b pb-4">
-            <span className="text-lg font-semibold text-gray-800">
-              {section.sectionName}, {module.moduleName}
+      <ExamNavbar
+  section={section}
+  module={module}
+  timer={timer}
+  formatTime={formatTime}
+  showTimer={showTimer}
+  setShowTimer={setShowTimer}
+  setIsDirectionsOpen={setIsDirectionsOpen}
+  setShowDesmos={setShowDesmos}
+  setShowScientific={setShowScientific}
+  navigate={navigate}
+/>
+
+<DirectionsDialog
+      open={isDirectionsOpen}
+      onOpenChange={setIsDirectionsOpen}
+    />
+
+      {/* Header */}
+
+      {/* <div className="rounded-lg shadow-md p-6 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">{test.testname}</h1>
+
+                    <div
+                        className={`text-2xl font-semibold ${timer < 60 ? "text-red-600" : "text-black"
+                            }`}
+                    >
+                        ⏱️ {formatTime(timer)}
+                    </div>
+                </div>
+
+                <div className="mb-2 font-semibold">Section: {section.sectionName}</div>
+
+                <div className="mb-2 font-semibold">Module: {module.moduleName}</div>
+            </div> */}
+
+      {/* Question and Calculator Layout */}
+
+      <div className="flex gap-6 mb-6">
+        {/* Current Question */}
+
+        <div
+          className={`rounded-lg shadow-md p-6 transition-all duration-300 ${
+            showDesmos || showScientific ? "w-1/2" : "w-full"
+          }`}
+        >
+          <div className="mb-4">
+            <span className="text-sm text-gray-500">
+              Question {currentQuestion + 1} of {module.questions.length}
             </span>
+
+            <h2 className="text-xl font-semibold text-gray-800 mt-2">
+              {q.question}
+            </h2>
           </div>
 
-          <div className="mb-4 text-gray-700 leading-relaxed">
-            <p>{q.question}</p>
-          </div>
+          <div className="space-y-3">
+            {q.options.map((option, optionIndex) => (
+              <label
+                key={optionIndex}
+                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  answersArr[currentQuestion] === option
+                    ? "border-black bg-black-50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`question-${currentQuestion}`}
+                  value={option}
+                  checked={answersArr[currentQuestion] === option}
+                  onChange={() => handleAnswerChange(currentQuestion, option)}
+                  className="mr-3"
+                />
 
-          {/* This is where you would render the passage if it exists */}
-          {q.passage && (
-            <div className="mb-4 p-4 border rounded bg-gray-50 text-gray-600">
-              <p>{q.passage}</p>
-            </div>
-          )}
-
-          <RadioGroup 
-            onValueChange={(value) => handleAnswerChange(currentQuestion, value)} 
-            value={answersArr[currentQuestion]} 
-          >
-            {q.options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                <RadioGroupItem value={option} id={`option-${index}`} className="shrink-0" />
-                <Label htmlFor={`option-${index}`} className="flex-1 font-normal cursor-pointer">
-                  {option}
-                </Label>
-              </div>
+                <span className="text-gray-700">{option}</span>
+              </label>
             ))}
-          </RadioGroup>
-        </div>
-
-        {/* Right Side Tools Panel */}
-        <div className="w-1/3 min-w-[300px] flex flex-col space-y-4">
-          <div className="flex-1 bg-white rounded-lg shadow-md p-4 overflow-auto">
-            <h3 className="text-lg font-bold mb-4">Tools</h3>
-            {/* Desmos Dialog */}
-            <Dialog onOpenChange={setShowDesmos} open={showDesmos}>
-              <DialogTrigger asChild>
-                <Button className="w-full mb-2" variant="outline" onClick={() => setShowScientific(false)}>
-                  Graphing Calculator
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>Graphing Calculator</DialogTitle>
-                </DialogHeader>
-                <div ref={desmosRef} className="w-full h-[400px]"></div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Scientific Calculator Dialog */}
-            <Dialog onOpenChange={setShowScientific} open={showScientific}>
-              <DialogTrigger asChild>
-                <Button className="w-full" variant="outline" onClick={() => setShowDesmos(false)}>
-                  Scientific Calculator
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-xs">
-                <DialogHeader>
-                  <DialogTitle>Scientific Calculator</DialogTitle>
-                </DialogHeader>
-                <div ref={scientificRef} className="w-full h-[400px]"></div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
+
+        {/* Calculator Area */}
+
+        {(showDesmos || showScientific) && (
+          <div className="w-1/2 rounded-lg shadow-md p-4">
+            {showDesmos && (
+              <div className="h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Desmos Calculator
+                  </h3>
+
+                  <button
+                    onClick={() => setShowDesmos(false)}
+                    className="text-gray-500 hover:text-gray-700 text-xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div
+                  ref={desmosRef}
+                  className="w-full h-96 border border-gray-200 rounded-lg"
+                  style={{ minHeight: "384px" }}
+                ></div>
+              </div>
+            )}
+
+            {showScientific && (
+              <div className="h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Scientific Calculator
+                  </h3>
+
+                  <button
+                    onClick={() => setShowScientific(false)}
+                    className="text-gray-500 hover:text-gray-700 text-xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div
+                  ref={scientificRef}
+                  className="w-full h-96 border border-gray-200 rounded-lg"
+                  style={{ minHeight: "384px" }}
+                ></div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="bg-white shadow-md p-4 flex justify-between items-center sticky bottom-0">
-        <div className="flex items-center space-x-4">
-          <div className="font-semibold text-gray-800">
-            {questionLabel}
-          </div>
-        </div>
-        <div className="flex space-x-4">
+      {/* Navigation Buttons */}
+
+      <div className="rounded-lg p-6">
+        <div className="flex justify-between items-center">
+          {/* Previous */}
+
           {currentQuestion > 0 && (
-            <Button
-              variant="outline"
+            <button
               onClick={() => setCurrentQuestion(currentQuestion - 1)}
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
             >
-              Previous
-            </Button>
+              ← Previous
+            </button>
           )}
+
+          {/* Spacer if no previous */}
+
+          {currentQuestion === 0 && <div></div>}
+
+          {/* Next / Submit */}
+
           {currentQuestion < module.questions.length - 1 ? (
-            <Button onClick={() => setCurrentQuestion(currentQuestion + 1)}>
-              Next
-            </Button>
-          ) : (
-            <Button
-              onClick={handleModuleSubmit}
-              disabled={submitting}
+            <button
+              onClick={() => setCurrentQuestion(currentQuestion + 1)}
+              disabled={answersArr[currentQuestion] === ""}
+              className="px-6 py-2 bg-black text-white rounded hover:bg-black disabled:opacity-50"
             >
-              {currentModule === section.modules.length - 1 && currentSection === test.sections.length - 1
+              Next →
+            </button>
+          ) : (
+            <button
+              onClick={handleModuleSubmit}
+              disabled={submitting || answersArr[currentQuestion] === ""}
+              className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {currentModule === section.modules.length - 1 &&
+              currentSection === test.sections.length - 1
                 ? "Submit Test"
                 : "Submit Module"}
-            </Button>
+            </button>
           )}
         </div>
       </div>

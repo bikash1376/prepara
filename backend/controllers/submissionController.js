@@ -1,6 +1,7 @@
 import Submission from '../models/Submission.js';
 import Test from '../models/Test.js';
 import User from '../models/User.js';
+import mongoose from 'mongoose';
 
 // Submit test answers and generate score/review
 export const submitTest = async (req, res) => {
@@ -121,6 +122,11 @@ export const getSubmissionReview = async (req, res) => {
   try {
     const { submissionId } = req.params;
     const userId = req.user.id;
+
+    // Validate submissionId format
+    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+      return res.status(400).json({ message: "Invalid submission ID format" });
+    }
 
     const submission = await Submission.findOne({ 
       _id: submissionId, 

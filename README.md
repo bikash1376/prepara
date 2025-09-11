@@ -94,3 +94,4 @@ ADMIN
 
 
 Problems : reloading http://localhost:5173/test-list sometimes doesn't show tests
+Problems : Account deleted from admin dashboard will also delete from clerk

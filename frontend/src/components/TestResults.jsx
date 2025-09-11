@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { Loader2, CheckCircle2, XCircle, Timer, Target, Percent, ArrowLeft } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 const TestResults = () => {
   const { submissionId } = useParams();
@@ -8,31 +16,36 @@ const TestResults = () => {
   const { getToken } = useAuth();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showReview, setShowReview] = useState(false);
 
   useEffect(() => {
     fetchResults();
   }, [submissionId]);
 
   const fetchResults = async () => {
+    setLoading(true);
     try {
       const token = await getToken();
-      const response = await fetch(`http://localhost:5000/api/v1/submission/review/${submissionId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setResults(data);
-      } else {
-        alert("Failed to load results");
-        navigate("/submission-history");
+      if (!token) {
+        console.error("Clerk token not found. User may be signed out.");
+        setLoading(false);
+        return;
       }
+      const response = await fetch(`http://localhost:5000/api/v1/submission/review/${submissionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Failed to load results. Status: ${response.status}. Response: ${errorText}`);
+        setResults(null);
+        return;
+      }
+      
+      const data = await response.json();
+      setResults(data);
     } catch (error) {
-      console.error("Error fetching results:", error);
-      alert("Error loading results");
-      navigate("/submission-history");
+      console.error("An error occurred during the fetch operation:", error);
+      setResults(null);
     } finally {
       setLoading(false);
     }
@@ -44,161 +57,155 @@ const TestResults = () => {
     return `${mins}m ${secs}s`;
   };
 
-  const getScoreColor = (percentage) => {
-    if (percentage >= 80) return "text-green-600";
-    if (percentage >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getScoreBgColor = (percentage) => {
-    if (percentage >= 80) return "bg-green-100 border-green-200";
-    if (percentage >= 60) return "bg-yellow-100 border-yellow-200";
-    return "bg-red-100 border-red-200";
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!results) {
     return (
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-bold text-red-600">Results not found</h2>
+      <div className="container mx-auto p-4 md:p-6">
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Could not load test results. Please try again or return to your submission history.
+          </AlertDescription>
+        </Alert>
+        <Button variant="outline" className="mt-4" onClick={() => navigate("/submission-history")}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 p-6">
-      {/* Results Header */}
-      <div className={`rounded-lg shadow-md p-8 mb-6 border-2 ${getScoreBgColor(results.percentage)}`}>
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{results.testName}</h1>
-          <div className="mb-4">
-            <span className="text-sm text-gray-600">Test completed on </span>
-            <span className="font-medium">
-              {new Date(results.submittedAt).toLocaleDateString()} at{" "}
-              {new Date(results.submittedAt).toLocaleTimeString()}
-            </span>
-          </div>
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Test Results</h1>
+          <p className="text-muted-foreground">
+            Summary for your attempt at: <span className="font-semibold">{results.testName}</span>
+          </p>
+        </div>
+        <div className="mt-4 sm:mt-0 flex gap-2">
+            <Button onClick={() => navigate("/test-list")}>Take Another Test</Button>
+            <Button variant="outline" onClick={() => navigate("/submission-history")}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> View History
+            </Button>
+        </div>
+      </div>
 
-          {/* Score Display */}
-          <div className="mb-6">
-            <div className={`text-6xl font-bold ${getScoreColor(results.percentage)} mb-2`}>
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Final Score</CardTitle>
+            <Percent className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={cn("text-2xl font-bold", results.passed ? "text-green-600" : "text-destructive")}>
               {results.percentage}%
             </div>
-            <div className="text-xl text-gray-700 mb-2">
-              {results.score} out of {results.totalQuestions} correct
-            </div>
-            <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${
-              results.passed 
-                ? "bg-green-500 text-white" 
-                : "bg-red-500 text-white"
-            }`}>
-              {results.passed ? "✅ PASSED" : "❌ FAILED"}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-white rounded-lg p-4 shadow">
-              <div className="text-2xl font-bold text-black">{results.score}</div>
-              <div className="text-sm text-gray-600">Correct Answers</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow">
-              <div className="text-2xl font-bold text-orange-600">{results.totalQuestions - results.score}</div>
-              <div className="text-sm text-gray-600">Incorrect Answers</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow">
-              <div className="text-2xl font-bold text-purple-600">{formatTime(results.timeTaken)}</div>
-              <div className="text-sm text-gray-600">Time Taken</div>
-            </div>
-          </div>
-        </div>
+            <p className="text-xs text-muted-foreground">
+              Completed on {new Date(results.submittedAt).toLocaleDateString()}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            {results.passed ? <CheckCircle2 className="h-4 w-4 text-muted-foreground" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
+          </CardHeader>
+          <CardContent>
+             <Badge variant={results.passed ? "default" : "destructive"} className="text-lg">
+                {results.passed ? "Passed" : "Failed"}
+             </Badge>
+            <p className="text-xs text-muted-foreground">Passing score is 60%</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{results.score} / {results.totalQuestions}</div>
+            <p className="text-xs text-muted-foreground">
+              {results.totalQuestions - results.score} incorrect answers
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Time Taken</CardTitle>
+            <Timer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatTime(results.timeTaken)}</div>
+            <p className="text-xs text-muted-foreground">Total duration of the test</p>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Action Buttons */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex flex-wrap gap-4 justify-center">
-          <button
-            onClick={() => setShowReview(!showReview)}
-            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-black font-medium"
-          >
-            {showReview ? "Hide Review" : "Show Detailed Review"}
-          </button>
-          <button
-            onClick={() => navigate("/test-list")}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-          >
-            Take Another Test
-          </button>
-          <button
-            onClick={() => navigate("/submission-history")}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium"
-          >
-            View History
-          </button>
-        </div>
-      </div>
-
-      {/* Detailed Review */}
-      {showReview && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Detailed Review</h2>
-          
-          <div className="space-y-6">
+      
+      {/* Detailed Question Review using Accordion */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Detailed Question Review</CardTitle>
+          <CardDescription>
+            Click on any question to expand and see the details of your answer.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
             {results.review.map((item, index) => (
-              <div
-                key={index}
-                className={`border-l-4 p-6 rounded-r-lg ${
-                  item.isCorrect
-                    ? "border-green-500 bg-green-50"
-                    : "border-red-500 bg-red-50"
-                }`}
-              >
-                <div className="mb-3">
-                  <span className="text-sm font-medium text-gray-500">
-                    Question {index + 1}
-                  </span>
-                  <h3 className="text-lg font-semibold text-gray-800 mt-1">
-                    {item.question}
-                  </h3>
-                </div>
-
-                <div className="mb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AccordionItem value={`item-${index}`} key={index}>
+                <AccordionTrigger>
+                  <div className="flex items-center justify-between w-full pr-4">
+                    <div className="flex items-center text-left">
+                      <span className="font-semibold mr-4">Q{index + 1}</span>
+                      <p className="truncate max-w-md">{item.question}</p>
+                    </div>
+                    <Badge variant={item.isCorrect ? "default" : "destructive"}>
+                      {item.isCorrect ? "Correct" : "Incorrect"}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="p-4 bg-muted">
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Your Answer:</span>
-                      <div className={`mt-1 p-3 rounded ${
+                      <h4 className="font-semibold mb-2">Your Answer:</h4>
+                      <div className={cn("p-3 rounded-md text-sm", 
                         item.isCorrect 
-                          ? "bg-green-100 text-green-800" 
-                          : "bg-red-100 text-red-800"
-                      }`}>
+                        ? "bg-green-100 text-green-900 dark:bg-green-900/20 dark:text-green-400" 
+                        : "bg-red-100 text-red-900 dark:bg-red-900/20 dark:text-red-400"
+                      )}>
                         {item.userAnswer || "No answer selected"}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Correct Answer:</span>
-                      <div className="mt-1 p-3 rounded bg-green-100 text-green-800">
+                      <h4 className="font-semibold mb-2">Correct Answer:</h4>
+                      <div className="p-3 rounded-md text-sm bg-green-100 text-green-900 dark:bg-green-900/20 dark:text-green-400">
                         {item.correctAnswer}
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-4 p-4 bg-white rounded border">
-                  <span className="text-sm font-medium text-gray-600">Explanation:</span>
-                  <p className="mt-1 text-gray-700">{item.explanation}</p>
-                </div>
-              </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Explanation:</h4>
+                    <div className="p-3 rounded-md text-sm border bg-background">
+                      <p className="text-muted-foreground">{item.explanation}</p>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
-        </div>
-      )}
+          </Accordion>
+        </CardContent>
+      </Card>
     </div>
   );
 };
