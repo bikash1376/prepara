@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import cors from 'cors';
-import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
+// import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 import authRoutes from './routes/auth.js';
 import addTest from './routes/test.js';
 // import studentTestRoutes from './routes/studentTest.js';
@@ -38,7 +38,4 @@ app.use('/api/v1/submission', submissionRoutes);
 app.listen(PORT, () => {
     console.log(`✅ Server is running on port ${PORT}`);
     console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
-    console.log(`📊 Test endpoints:`);
-    console.log(`   - GET /api/v1/test/with-status (requires auth)`);
-    console.log(`   - GET /api/v1/submission/history (requires auth)`);
 })

@@ -45,3 +45,52 @@ Checking..
 
 68b72105013cad49c0f91995
 68b72078013cad49c0f91991
+
+
+AS PER GPT: 
+
+STUDENT 
+- Home
+- My Tests
+- My Submissions
+- Profile (Name, Image, Subscription type, Email, Password reset, About, Privacy Policy, Terms and conditions)
+- Logout
+
+PREMIUM
+- More test sets
+- Flashcards
+- Guides
+- Lessons
+- Detailed Analytics
+
+
+
+AFTER LOGIN
+-Welcome (Name)
+-Last test score
+-Guides card (Guide name, button ("read guide"))
+-Cards (Test svg icon,Test name, button ("take test"))
+
+
+
+ADMIN
+-Dashboard()
+ -Card (Total students)
+ -Card(Active today)
+ -Card(Tests created, Tests taken)
+-Test Management()
+ -Create Test
+ -Edit Test
+ -Delete Test
+-Student Management()
+ -List of students (Name, email, Role, Subscription type, Last login, Actions(View (Student profile), Delete))
+ -Filter By (Active, Inactive, Subscription type)
+ -Search by name
+-Submissions
+ -List of tests(Button ("View Submissions"))
+  -Submitted By (Name, time, score)
+  -Filter
+
+
+
+Problems : reloading http://localhost:5173/test-list sometimes doesn't show tests

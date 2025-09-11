@@ -1,246 +1,225 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+"use client";
+
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useUser, UserButton } from "@clerk/clerk-react";
 import { useTheme } from "./theme-provider";
 
+// shadcn/ui components
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose
+} from "@/components/ui/sheet";
+import { HamburgerMenuIcon, SunIcon, MoonIcon, DesktopIcon } from "@radix-ui/react-icons";
+
 const Navbar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, isSignedIn } = useUser();
   const { theme, setTheme } = useTheme();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showMobileDropdown, setShowMobileDropdown] = useState(false);
-  const dropdownRef = useRef(null); // desktop
-  const mobileDropdownRef = useRef(null); // mobile
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        (dropdownRef.current && dropdownRef.current.contains(event.target)) ||
-        (mobileDropdownRef.current && mobileDropdownRef.current.contains(event.target))
-      ) {
-        return;
-      }
-      setShowDropdown(false);
-      setShowMobileDropdown(false);
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  if (!isSignedIn || !user) return null; // Don't show navbar if not logged in
+  if (!isSignedIn || !user) return null;
 
   const role = user?.publicMetadata?.role;
   const isActive = (path) => location.pathname === path;
 
+  // Render navigation links based on user role
+  const renderNavLinks = () => (
+    <>
+      <NavigationMenuItem>
+        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+          <Link to="/" className={isActive("/") ? "bg-accent text-accent-foreground" : ""}>
+            Home
+          </Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
+
+      {role === "student" && (
+        <>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/test-list" className={isActive("/submission-history") ? "bg-accent text-accent-foreground" : ""}>
+              My Tests
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/submission-history" className={isActive("/submission-history") ? "bg-accent text-accent-foreground" : ""}>
+                My Submissions
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          {/* <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/submission-history" className={isActive("/submission-history") ? "bg-accent text-accent-foreground" : ""}>
+                My submissions
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem> */}
+        </>
+      )}
+
+      {role === "admin" && (
+        <>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/admin/dashboard" className={isActive("/admin/dashboard") ? "bg-accent text-accent-foreground" : ""}>
+                Dashboard
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/admin/test-list" className={isActive("/admin/test-list") ? "bg-accent text-accent-foreground" : ""}>
+                Manage Tests
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/admin/add-test" className={isActive("/admin/add-test") ? "bg-accent text-accent-foreground" : ""}>
+                Add Test
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        </>
+      )}
+    </>
+  );
+
+  const renderMobileLinks = () => (
+    <>
+    <SheetClose asChild>
+      <Link to="/" className={`block py-2 ${isActive("/") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+        Home
+      </Link>
+      </SheetClose>
+      {role === "student" && (
+        <>
+        <SheetClose asChild>
+        <Link to="/test-list" className={`block py-2 ${isActive("/test-list") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+          My Tests
+        </Link>
+        </SheetClose>
+        <SheetClose asChild>
+        <Link to="/submission-history" className={`block py-2 ${isActive("/submission-history") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+          My Submissions
+        </Link>
+        </SheetClose>
+
+        
+        </>
+      )}
+      {role === "admin" && (
+        <>
+        <SheetClose asChild>
+          <Link to="/admin/dashboard" className={` block py-2 ${isActive("/admin/dashboard") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Dashboard
+          </Link>
+          </SheetClose>
+          <SheetClose asChild>
+          <Link to="/admin/test-list" className={`block py-2 ${isActive("/admin/test-list") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Manage Tests
+          </Link>
+          </SheetClose>
+          <SheetClose asChild>
+          <Link to="/admin/add-test" className={`block py-2 ${isActive("/admin/add-test") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Add Test
+          </Link>
+          </SheetClose>
+        </>
+      )}
+    </>
+  );
+
   return (
-    <nav className="bg-white text-black shadow-lg">
+    <nav className="border-b">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold"><img src="https://10xlearningacademy.com/assets/images/logo-learn2.png" alt="" width={150}/></span>
+            <span className="text-xl font-bold">
+              <img src="https://10xlearningacademy.com/assets/images/logo-learn2.png" alt="Logo" width={150} />
+            </span>
           </Link>
 
-          {/* Navigation Links */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {/* Common Links */}
-            <Link
-              to="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/") ? "bg-black text-white" : "hover:bg-black hover:text-white"
-              }`}
-            >
-              🏠 Home
-            </Link>
+            <NavigationMenu>
+              <NavigationMenuList>
+                {renderNavLinks()}
+              </NavigationMenuList>
+            </NavigationMenu>
 
-            {/* Student Links */}
-            {role === "student" && (
-              <>
-                {/* <Link
-                  to="/student/dashboard"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/student/dashboard") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📊 Dashboard
-                </Link>
-                <Link
-                  to="/test-list"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/test-list") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📚 Tests
-                </Link> */}
-                <Link
-                  to="/submission-history"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/submission-history") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📋 Attempts
-                </Link>
-              </>
-            )}
-
-            {/* Admin Links */}
-            {role === "admin" && (
-              <>
-                <Link
-                  to="/admin/dashboard"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/dashboard") ? "bg-black text-white" : "hover:bg-black hover:text-white"
-                  }`}
-                >
-                  🎛️ Dashboard
-                </Link>
-                <Link
-                  to="/admin/test-list"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/test-list") ? "bg-black text-white" : "hover:bg-black hover:text-white"
-                  }`}
-                >
-                  📝 Manage Tests
-                </Link>
-                <Link
-                  to="/admin/add-test"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/add-test") ? "bg-black text-white" : "hover:bg-black hover:text-white"
-                  }`}
-                >
-                  ➕ Add Test
-                </Link>
-              </>
-            )}
-
-            {/* Theme Toggle */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  const newTheme = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
-                  setTheme(newTheme);
-                }}
-                className="p-2 rounded-md hover:bg-gray-700 transition-colors"
-                title={`Current theme: ${theme}`}
-              >
-                {theme === "dark" ? "🌙" : theme === "light" ? "☀️" : "🖥️"}
-              </button>
-            </div>
-
-            {/* User Button */}
-            <div className="relative ml-6">
-              <UserButton 
-                afterSignOutUrl="/login"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                    userButtonPopoverCard: "bg-white border shadow-lg",
-                    userButtonPopoverActionButton: "text-gray-700 hover:bg-gray-100"
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Mobile Theme Toggle and User Button */}
-          <div className="md:hidden flex items-center space-x-3">
-            <button
+            {/* Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 const newTheme = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
                 setTheme(newTheme);
               }}
-              className="p-2 rounded-md hover:bg-gray-700 transition-colors"
               title={`Current theme: ${theme}`}
             >
-              {theme === "dark" ? "🌙" : theme === "light" ? "☀️" : "🖥️"}
-            </button>
-            <UserButton 
-              afterSignOutUrl="/login"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                  userButtonPopoverCard: "bg-white border shadow-lg",
-                  userButtonPopoverActionButton: "text-gray-700 hover:bg-gray-100"
-                }
-              }}
-            />
+              {theme === "dark" ? <MoonIcon /> : theme === "light" ? <SunIcon /> : <DesktopIcon />}
+            </Button>
+
+            {/* User Button */}
+            <div className="flex items-center space-x-2">
+  <UserButton afterSignOutUrl="/login" />
+  <span>{user.firstName}</span>
+</div>
+
+            
           </div>
-        </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden pb-4">
-          <div className="flex flex-col space-y-2">
-            <Link
-              to="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/") ? "bg-black" : "hover:bg-black"
-              }`}
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center space-x-3">
+            {/* Mobile Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newTheme = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
+                setTheme(newTheme);
+              }}
+              title={`Current theme: ${theme}`}
             >
-              🏠 Home
-            </Link>
+              {theme === "dark" ? <MoonIcon /> : theme === "light" ? <SunIcon /> : <DesktopIcon />}
+            </Button>
 
-            {role === "student" && (
-              <>
-                <Link
-                  to="/student/dashboard"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/student/dashboard") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📊 Dashboard
-                </Link>
-                <Link
-                  to="/test-list"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/test-list") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📚 Tests
-                </Link>
-                <Link
-                  to="/submission-history"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/submission-history") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📋 History
-                </Link>
-              </>
-            )}
+            {/* Mobile User Button */}
+            <UserButton afterSignOutUrl="/login" />
 
-            {role === "admin" && (
-              <>
-                <Link
-                  to="/admin/dashboard"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/dashboard") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  🎛️ Dashboard
-                </Link>
-                <Link
-                  to="/admin/test-list"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/test-list") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  📝 Manage Tests
-                </Link>
-                <Link
-                  to="/admin/add-test"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/admin/add-test") ? "bg-black" : "hover:bg-black"
-                  }`}
-                >
-                  ➕ Add Test
-                </Link>
-              </>
-            )}
+            {/* Mobile Sheet Trigger */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <HamburgerMenuIcon className="h-6 w-6" />
+                  <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  {/* <SheetTitle>Navigation</SheetTitle> */}
+                </SheetHeader>
+                <div className="grid gap-4 py-4 ml-4">
+                  {renderMobileLinks()}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
