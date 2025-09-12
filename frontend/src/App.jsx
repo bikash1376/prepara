@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser, SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
-
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 import AddTest from "./components/AddTest";
 import TestViewer from "./components/TestViewer";
 import TestList from "./components/TestList";
@@ -17,6 +18,11 @@ import TestSubmission from "./components/TestSubmission";
 import TestResults from "./components/TestResults";
 import SubmissionHistory from "./components/SubmissionHistory";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Button } from "./components/ui/button";
+import StudentMgmt from "./components/StudentMgmt";
+import AdminSubmissions from "./components/AdminSubmissions";
+import AdminTestPreview from "./components/AdminTestPreview";
+import Tests from "./components/Tests";
 
 // Protected home page with Clerk authentication
 const HomePage = () => {
@@ -126,7 +132,8 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="student">
     
-                <TestList />
+                {/* <TestList /> */}
+                <Tests />
        
             
             </ProtectedRoute>
@@ -178,7 +185,10 @@ const AppContent = () => {
           path="/admin/test-list" 
           element={
             <ProtectedRoute requiredRole="admin">
+             
+              
               <AdminTestList />
+              
             </ProtectedRoute>
           } 
         />
@@ -187,6 +197,31 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="admin">
               <EditTest />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/preview-test/:id" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminTestPreview />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/submissions" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminSubmissions />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/student-management" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <StudentMgmt />
             </ProtectedRoute>
           } 
         />

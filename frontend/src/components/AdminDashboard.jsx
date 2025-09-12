@@ -1,6 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import LogoutButton from "./LogoutButton";
+import { Users, Activity, FileText, Trash2, ChevronDown, Loader2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -8,6 +31,10 @@ const AdminDashboard = () => {
   const [userSubmissions, setUserSubmissions] = useState({});
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -55,142 +82,166 @@ const AdminDashboard = () => {
 
   const handleViewSubmissions = async (userId) => {
     if (expandedUser === userId) {
-      setExpandedUser(null);
+      setExpandedUser(null); // Collapse if already open
       return;
     }
-    setLoadingSubmissions(true);
-    setExpandedUser(userId);
-    try {
-      const token = await getToken();
-      const res = await fetch(
-        `http://localhost:5000/api/v1/admin/submissions/${userId}`,
-        {
+
+    setExpandedUser(userId); // Expand the new one
+    // Fetch submissions only if they haven't been fetched before
+    if (!userSubmissions[userId]) {
+      setLoadingSubmissions(true);
+      try {
+        const token = await getToken();
+        const res = await fetch(`http://localhost:5000/api/v1/admin/submissions/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await res.json();
-      setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
-      setLoadingSubmissions(false);
-    } catch (error) {
-      console.error("Error fetching submissions:", error);
-      setLoadingSubmissions(false);
+        });
+        const data = await res.json();
+        setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
+      } catch (error) {
+        console.error("Error fetching submissions:", error);
+      } finally {
+        setLoadingSubmissions(false);
+      }
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
+    <div className="container mx-auto p-4 md:p-8">
+      <h1 className="text-3xl font-bold tracking-tight mb-6">Admin Dashboard</h1>
 
-      {/* Navigation buttons */}
-      <div className="flex gap-4 mb-6">
-        {/* <button
-          onClick={() => navigate("/admin/add-test")}
-          className="px-4 py-2 bg-black text-white rounded"
-        >
-          ➕ Add Test
-        </button> */}
-        {/* <button
-          onClick={() => navigate("/admin/test-list")}
-          className="px-4 py-2 bg-yellow-600 text-white rounded"
-        >
-          📑 Manage Tests
-        </button>
-        <LogoutButton /> */}
+      {/* Stat Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.length}</div>
+            <p className="text-xs text-muted-foreground">All registered users</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Today</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">Hardcoded value</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tests Taken</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">28</div>
+            <p className="text-xs text-muted-foreground">Total test submissions</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* User Management Table */}
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Email</th>
-            <th className="p-2 border">Role</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <React.Fragment key={u._id}>
-              <tr className="border">
-                <td className="p-2 border">{u.name}</td>
-                <td className="p-2 border">{u.email}</td>
-                <td className="p-2 border">
-                  <select
-                    value={u.role}
-                    onChange={(e) => changeRole(u._id, e.target.value)}
-                    className="border rounded px-2 py-1"
-                  >
-                    <option value="student">Student</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </td>
-                <td className="p-2 border flex gap-2">
-                  <button
-                    onClick={() => deleteUser(u._id)}
-                    className="px-2 py-1 bg-red-500 text-white rounded"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => handleViewSubmissions(u._id)}
-                    className="px-2 py-1 bg-blue-600 text-white rounded"
-                  >
-                    {expandedUser === u._id
-                      ? "Hide Submissions"
-                      : "View Submissions"}
-                  </button>
-                </td>
-              </tr>
-              {expandedUser === u._id && (
-                <tr>
-                  <td colSpan={4} className="p-2 border bg-gray-50">
-                    {loadingSubmissions ? (
-                      <div>Loading submissions...</div>
-                    ) : userSubmissions[u._id] && userSubmissions[u._id].length > 0 ? (
-                      <table className="w-full text-sm mt-2">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="p-1 border">Test Name</th>
-                            <th className="p-1 border">Score</th>
-                            <th className="p-1 border">%</th>
-                            <th className="p-1 border">Date</th>
-                            <th className="p-1 border">Time</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {userSubmissions[u._id].map((s) => (
-                            <tr key={s._id}>
-                              <td className="p-1 border">{s.testName}</td>
-                              <td className="p-1 border">
-                                {s.score}/{s.totalQuestions}
-                              </td>
-                              <td className="p-1 border">{s.percentage}%</td>
-                              <td className="p-1 border">
-                                {new Date(s.submittedAt).toLocaleString()}
-                              </td>
-                              <td className="p-1 border">
-                                {Math.floor(s.timeTaken / 60)}m {s.timeTaken % 60}s
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="text-gray-500">No submissions found.</div>
-                    )}
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+      {/* <h2 className="text-2xl font-bold tracking-tight mb-4">User Management</h2>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <Collapsible asChild key={user._id} open={expandedUser === user._id}>
+                <>
+                  <TableRow>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Select value={user.role} onValueChange={(value) => changeRole(user._id, value)}>
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="student">Student</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                       <CollapsibleTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => handleViewSubmissions(user._id)}>
+                          Submissions
+                          <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${expandedUser === user._id ? "rotate-180" : ""}`} />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <Button variant="destructive" size="icon" onClick={() => deleteUser(user._id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <CollapsibleContent asChild>
+                    <TableRow>
+                      <TableCell colSpan={4} className="p-0">
+                        <div className="p-4 bg-muted">
+                           {loadingSubmissions && expandedUser === user._id ? (
+                            <div className="flex items-center justify-center p-4">
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                            </div>
+                          ) : userSubmissions[user._id]?.length > 0 ? (
+                            <SubmissionsTable submissions={userSubmissions[user._id]} />
+                          ) : (
+                            <div className="text-center text-sm text-muted-foreground p-4">
+                              No submissions found for this user.
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </CollapsibleContent>
+                </>
+              </Collapsible>
+            ))}
+          </TableBody>
+        </Table>
+      </div> */}
     </div>
   );
 };
+
+// A small sub-component for clarity
+const SubmissionsTable = ({ submissions }) => (
+  <>
+    <h4 className="text-md font-semibold mb-2 px-2">Test Submissions</h4>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Test Name</TableHead>
+          <TableHead>Score</TableHead>
+          <TableHead>Percentage</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead>Time Taken</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {submissions.map((s) => (
+          <TableRow key={s._id}>
+            <TableCell>{s.testName}</TableCell>
+            <TableCell>{s.score}/{s.totalQuestions}</TableCell>
+            <TableCell>{s.percentage}%</TableCell>
+            <TableCell>{new Date(s.submittedAt).toLocaleDateString()}</TableCell>
+            <TableCell>{Math.floor(s.timeTaken / 60)}m {s.timeTaken % 60}s</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </>
+);
+
 
 export default AdminDashboard;

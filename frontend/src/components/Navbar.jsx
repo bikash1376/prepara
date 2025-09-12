@@ -49,7 +49,7 @@ const Navbar = () => {
         <>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/test-list" className={isActive("/submission-history") ? "bg-accent text-accent-foreground" : ""}>
+              <Link to="/test-list" className={isActive("/test-list") ? "bg-accent text-accent-foreground" : ""}>
               My Tests
               </Link>
             </NavigationMenuLink>
@@ -75,21 +75,21 @@ const Navbar = () => {
         <>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/dashboard" className={isActive("/admin/dashboard") ? "bg-accent text-accent-foreground" : ""}>
+              <Link to="/admin/test-list" className={isActive("/admin/test-list") ? "bg-accent text-accent-foreground" : ""}>
                 Test Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/test-list" className={isActive("/admin/test-list") ? "bg-accent text-accent-foreground" : ""}>
+              <Link to="/admin/student-management" className={isActive("/admin/student-management") ? "bg-accent text-accent-foreground" : ""}>
                 Student Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/add-test" className={isActive("/admin/add-test") ? "bg-accent text-accent-foreground" : ""}>
+              <Link to="/admin/submissions" className={isActive("/admin/submissions") ? "bg-accent text-accent-foreground" : ""}>
                 Submissions
               </Link>
             </NavigationMenuLink>

@@ -76,14 +76,14 @@ const TestList = () => {
   }
 
   const availableTests = tests.filter(test => !test.isCompleted);
-  // const completedTests = tests.filter(test => test.isCompleted);
+  const completedTests = tests.filter(test => test.isCompleted);
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-2">Welcome, {userName}!</h1>
-      <p className="text-muted-foreground text-lg mb-6">Last Test Score: {lastScore}</p>
+      {/* <h1 className="text-3xl font-bold mb-2">Welcome, {userName}!</h1> */}
+      {/* <p className="text-muted-foreground text-lg mb-6">Last Test Score: {lastScore}</p> */}
       
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <Card className="flex flex-col text-center w-full max-w-sm mx-auto md:mx-0">
           <CardHeader className="flex flex-col items-center">
             <GuideSVG className="w-12 h-12 text-blue-500 mb-2" />
@@ -116,18 +116,18 @@ const TestList = () => {
             </Dialog>
           </CardFooter>
         </Card>
-      </div>
+      </div> */}
 
-      <Separator className="my-8" />
+      {/* <Separator className="my-8" /> */}
       
       {/* --- Available Tests Section --- */}
-      <div className="flex justify-between items-center mb-6">
+      {/* <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Available Tests</h2>
         <Button onClick={() => fetchTestsWithStatus(true)} variant="outline" size="sm" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FiRefreshCw className="w-4 h-4 mr-2" />}
             Refresh
         </Button>
-      </div>
+      </div> */}
 
       {error && (
         <Card className="text-center py-8 mb-6 border-destructive bg-destructive/10">
@@ -197,7 +197,7 @@ const TestList = () => {
       )}
 
       {/* --- Completed Tests Section --- */}
-      {/* {completedTests.length > 0 && (
+      {completedTests.length > 0 && (
         <>
             <Separator className="my-12" />
             <div className="mb-6">
@@ -222,7 +222,7 @@ const TestList = () => {
                 ))}
             </div>
         </>
-      )} */}
+      )}
     </div>
   );
 };

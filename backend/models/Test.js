@@ -4,7 +4,11 @@ const questionSchema = new mongoose.Schema({
     question: { type: String, required: true },
     options: [{ type: String, required: true }],
     answer: { type: String, required: true },
-    explanation: { type: String, default: '' }
+    explanation: { type: String, default: '' },
+    image: { 
+        type: String, 
+        default: null // UploadThing URL for the question image
+    }
 });
 
 const moduleSchema = new mongoose.Schema({

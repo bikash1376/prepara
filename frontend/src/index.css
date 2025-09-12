@@ -118,3 +118,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+button:hover {
+  cursor: pointer;
+}
+
+Link:hover {
+  cursor: pointer;
+}

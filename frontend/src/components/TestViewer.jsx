@@ -59,6 +59,17 @@ const TestViewer = () => {
         <div className="md:w-1/2 p-6 border-r flex items-start justify-center bg-zinc-900 text-white">
           <div>
             <p className="text-base mb-2">{question.question}</p>
+            
+            {/* Display question image if available */}
+            {question.image && (
+              <div className="mt-4">
+                <img 
+                  src={question.image} 
+                  alt={`Question ${currentQuestionIdx + 1} image`}
+                  className="max-w-full h-auto max-h-64 rounded border shadow-sm"
+                />
+              </div>
+            )}
           </div>
         </div>
         {/* Options Panel */}

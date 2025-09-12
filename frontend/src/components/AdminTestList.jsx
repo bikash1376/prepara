@@ -1,90 +1,167 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import AdminDashboard from "./AdminDashboard";
-import { Loader2 } from "lucide-react";
+import { FilePlus, Pencil, Trash2, Loader2, AlertCircle, Play } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const AdminTestList = () => {
   const [tests, setTests] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const { getToken } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchTests();
+  }, []);
+
+  // Clear message after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const fetchTests = async () => {
     setLoading(true);
     try {
       const token = await getToken();
       const res = await fetch("http://localhost:5000/api/v1/admin/tests", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       setTests(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching tests:", error);
-      setMessage("Error fetching tests");
+      setMessage("Failed to fetch tests.");
       setTests([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  useEffect(() => {
-    fetchTests();
-  }, []);
-
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this test?")) return;
-    setLoading(true);
     try {
       const token = await getToken();
       const res = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setMessage("Test deleted!");
-        fetchTests();
+        setMessage("Test deleted successfully!");
+        // Optimistically remove the test from the list for a faster UI response
+        setTests((prevTests) => prevTests.filter((test) => test._id !== id));
       } else {
-        setMessage("Error deleting test");
+        setMessage("Error deleting test. Please try again.");
       }
     } catch (error) {
       console.error("Error deleting test:", error);
-      setMessage("Error deleting test");
+      setMessage("An unexpected error occurred.");
     }
-    setLoading(false);
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      {/* <Link to='/admin/dashboard' className="mb-4 inline-block px-4 py-2 bg-black text-white rounded">Admin Dashboard</Link> */}
-      <h2 className="text-2xl font-bold mb-4">Admin: Test List</h2>
-      {message && <div className="mb-4 text-red-600">{message}</div>}
-      {loading && <Loader2 className="h-12 w-12 animate-spin text-primary" />}
-      <ul>
-        {tests.map(test => (
-          <li key={test._id} className="mb-3 flex justify-between items-center">
-            <span className="font-medium">{test.testname}</span>
-            <div className="space-x-2">
-              <button
-                className="px-3 py-1 bg-yellow-500 text-white rounded"
-                onClick={() => navigate(`/admin/edit-test/${test._id}`)}
-              >
-                Edit
-              </button>
-              <button
-                className="px-3 py-1 bg-red-600 text-white rounded"
-                onClick={() => handleDelete(test._id)}
-              >
-                Delete
-              </button>
+    <div className="container mx-auto max-w-2xl py-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="mb-2">Manage Tests</CardTitle>
+            <CardDescription>Add, edit, or delete question papers.</CardDescription>
+          </div>
+          <Button onClick={() => navigate("/admin/add-test")}>
+            <FilePlus className="mr-2 h-4 w-4" />
+            Add Test
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {message && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          )}
+
+          {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          </li>
-        ))}
-      </ul>
+          ) : tests.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <p>No tests found.</p>
+              <p className="text-sm">Click "Add Test" to create a new one.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {tests.map((test) => (
+                <div
+                  key={test._id}
+                  className="flex items-center justify-between rounded-md border p-4"
+                >
+                  <span className="font-medium">{test.testname}</span>
+                  <div className="space-x-2">
+                  <Button
+  variant="outline"
+  size="icon"
+  onClick={() => navigate(`/admin/preview-test/${test._id}`)}
+  className="text-green-600 hover:text-green-700"
+>
+  <Play className="h-4 w-4" />
+  <span className="sr-only">Preview Test</span>
+</Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => navigate(`/admin/edit-test/${test._id}`)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit Test</span>
+                    </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Test</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the test
+                            and all associated submissions.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(test._id)}>
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

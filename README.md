@@ -78,6 +78,7 @@ ADMIN
  -Card (Total students)
  -Card(Active today)
  -Card(Tests created, Tests taken)
+
 -Test Management()
  -Create Test
  -Edit Test
@@ -95,3 +96,11 @@ ADMIN
 
 Problems : reloading http://localhost:5173/test-list sometimes doesn't show tests
 Problems : Account deleted from admin dashboard should also delete from clerk
+
+Problems (authorization??): testRoutes.post('/add', protect, isAdmin, addTest);
+testRoutes.get('/all', getAllTests);
+testRoutes.get('/with-status', protect, getAllTestsWithStatus);
+testRoutes.get('/:id/access', protect, checkTestAccess);
+testRoutes.get('/:id', getTestById);
+testRoutes.put('/:id', protect, isAdmin, updateTest);
+testRoutes.delete('/:id', protect, isAdmin, deleteTest);
