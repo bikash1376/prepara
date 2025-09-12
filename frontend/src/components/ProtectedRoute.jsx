@@ -1,4 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -8,10 +9,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2">Loading...</p>
-        </div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 
 const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "" };
 const emptyModule = { moduleName: "", timer: 600, questions: [ { ...emptyQuestion } ] };
@@ -167,7 +168,7 @@ const AddTest = () => {
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Add Test (Sections, Modules, Breaks)</h2>
-      {loading && <div className="mb-4 text-gray-600">Loading...</div>}
+      {loading && <Loader2 className="h-12 w-12 animate-spin text-primary" />}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block font-medium mb-1">Test Name</label>

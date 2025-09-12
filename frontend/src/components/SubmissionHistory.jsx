@@ -26,33 +26,57 @@ import { cn } from "@/lib/utils";
 const SubmissionHistory = () => {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
+  const { getToken, isLoaded: authLoaded } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSubmissionHistory();
-  }, []);
+    console.log('SubmissionHistory useEffect - authLoaded:', authLoaded);
+    if (authLoaded) {
+      console.log('Auth loaded, fetching submission history...');
+      fetchSubmissionHistory();
+    }
+  }, [authLoaded]);
 
   const fetchSubmissionHistory = async () => {
+    console.log('fetchSubmissionHistory called');
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        console.error("No authentication token available");
-        setSubmissions([]);
+      if (!authLoaded) {
+        console.log("Authentication not loaded yet");
         return;
       }
       
+      const token = await getToken();
+      console.log('Token received:', token ? `Token: ${token.substring(0, 20)}...` : 'No token');
+      if (!token) {
+        console.error("No authentication token available");
+        setSubmissions([]);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Making API call to:', "http://localhost:5000/api/v1/submission/history");
       const response = await fetch("http://localhost:5000/api/v1/submission/history", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
+      
+      console.log('Response status:', response.status, response.statusText);
+      
       if (response.ok) {
+        const data = await response.json();
         setSubmissions(Array.isArray(data) ? data : []);
       } else {
-        console.error("Failed to load submission history:", data.message || "Unknown error");
+        // Handle non-JSON error responses
+        let errorMessage = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || 'Unknown error';
+        } catch (jsonError) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        console.error("Failed to load submission history:", errorMessage);
         setSubmissions([]);
       }
     } catch (error) {

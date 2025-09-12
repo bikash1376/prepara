@@ -2,11 +2,30 @@ import React from "react";
 import { Link } from "react-router-dom";
 import LogoutButton from "./LogoutButton";
 import TestList from "./TestList";
+import { SignedIn, RedirectToSignIn, SignedOut, useAuth, useUser } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 
 const StudentDashboard = () => {
+  const { isLoaded: authLoaded } = useAuth();
+  const { isLoaded: userLoaded } = useUser();
+
+  // Show loading state while Clerk is initializing
+  if (!authLoaded || !userLoaded) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <>
+    <SignedIn>
     <TestList/>
+    </SignedIn>
+    <SignedOut>
+    <RedirectToSignIn />
+    </SignedOut>
     {/* <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">🎓 Student Dashboard</h2>
 

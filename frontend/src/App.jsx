@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useUser, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useUser, SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 
 import AddTest from "./components/AddTest";
 import TestViewer from "./components/TestViewer";
@@ -71,17 +71,17 @@ const HomePage = () => {
       </h1>
 
       {/* Show Admin Dashboard link only if user is admin */}
-      {role === "admin" && (
+      {/* {role === "admin" && (
         <Link
           to="/admin/dashboard"
           className="mb-2 px-4 py-2 bg-purple-600 text-white rounded"
         >
           Admin Dashboard
         </Link>
-      )}
+      )} */}
 
       {/* Show Student Dashboard link only if user is student */}
-      {role === "student" && (
+      {/* {role === "student" && (
         <>
           <Link
             to="/student/dashboard"
@@ -90,7 +90,7 @@ const HomePage = () => {
             Student Dashboard
           </Link>
         </>
-      )}
+      )} */}
     </div>
   );
 };
@@ -125,7 +125,10 @@ const AppContent = () => {
           path="/test-list" 
           element={
             <ProtectedRoute requiredRole="student">
-              <TestList />
+    
+                <TestList />
+       
+            
             </ProtectedRoute>
           } 
         />

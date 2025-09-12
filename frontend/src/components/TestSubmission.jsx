@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
 import { useAuth } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
@@ -255,7 +254,7 @@ const TestSubmission = () => {
   if (loading || !test) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }

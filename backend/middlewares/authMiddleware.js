@@ -9,6 +9,9 @@ const clerkClient = createClerkClient({
 
 export const protect = async (req, res, next) => {
   try {
+    console.log('Auth middleware called for:', req.method, req.path);
+    console.log('Authorization header:', req.headers.authorization ? 'Present' : 'Missing');
+    
     // Check if CLERK_SECRET_KEY is set
     if (!process.env.CLERK_SECRET_KEY) {
       console.error("CLERK_SECRET_KEY environment variable is not set");
@@ -49,11 +52,11 @@ export const protect = async (req, res, next) => {
           role: role
         };
         
-        // console.log("Auth middleware - User authenticated:", {
-        //   id: userId,
-        //   role: role,
-        //   email: clerkUser.emailAddresses[0]?.emailAddress
-        // });
+        console.log("Auth middleware - User authenticated:", {
+          id: userId,
+          role: role,
+          email: clerkUser.emailAddresses[0]?.emailAddress
+        });
 
         next();
       } catch (userError) {

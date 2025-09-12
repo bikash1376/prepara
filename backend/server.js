@@ -10,7 +10,13 @@ import adminTestRoutes from './routes/adminTest.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import submissionRoutes from './routes/submission.js';
 
-dotenv.config(); 
+dotenv.config();
+
+// Debug: Check if environment variables are loaded
+console.log('Environment check:');
+console.log('CLERK_SECRET_KEY exists:', !!process.env.CLERK_SECRET_KEY);
+console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('PORT:', process.env.PORT); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;

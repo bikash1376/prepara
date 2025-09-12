@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import AdminDashboard from "./AdminDashboard";
+import { Loader2 } from "lucide-react";
 
 const AdminTestList = () => {
   const [tests, setTests] = useState([]);
@@ -62,7 +63,7 @@ const AdminTestList = () => {
       {/* <Link to='/admin/dashboard' className="mb-4 inline-block px-4 py-2 bg-black text-white rounded">Admin Dashboard</Link> */}
       <h2 className="text-2xl font-bold mb-4">Admin: Test List</h2>
       {message && <div className="mb-4 text-red-600">{message}</div>}
-      {loading && <div className="mb-4 text-gray-600">Loading...</div>}
+      {loading && <Loader2 className="h-12 w-12 animate-spin text-primary" />}
       <ul>
         {tests.map(test => (
           <li key={test._id} className="mb-3 flex justify-between items-center">

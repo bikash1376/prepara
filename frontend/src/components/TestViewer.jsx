@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const TestViewer = () => {
   const { id } = useParams();
@@ -16,7 +17,9 @@ const TestViewer = () => {
   if (!test) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <span className="text-xl font-semibold">Loading test...</span>
+        {/* <span className="text-xl font-semibold">Loading test...</span> */}
+
+<Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }

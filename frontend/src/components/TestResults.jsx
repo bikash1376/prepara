@@ -13,17 +13,24 @@ import { cn } from "@/lib/utils";
 const TestResults = () => {
   const { submissionId } = useParams();
   const navigate = useNavigate();
-  const { getToken } = useAuth();
+  const { getToken, isLoaded: authLoaded } = useAuth();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchResults();
-  }, [submissionId]);
+    if (authLoaded && submissionId) {
+      fetchResults();
+    }
+  }, [authLoaded, submissionId]);
 
   const fetchResults = async () => {
     setLoading(true);
     try {
+      if (!authLoaded) {
+        console.log("Authentication not loaded yet");
+        return;
+      }
+      
       const token = await getToken();
       if (!token) {
         console.error("Clerk token not found. User may be signed out.");

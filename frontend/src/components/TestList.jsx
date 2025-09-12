@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/clerk-react";
 
@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FileTextIcon } from "@radix-ui/react-icons";
-import {FiBookOpen} from "react-icons/fi";
+import {FiBookOpen, FiRefreshCw, FiAlertCircle} from "react-icons/fi";
+import { Loader2 } from "lucide-react";
 
 const GuideSVG = (props) => (
   <svg
@@ -29,46 +30,149 @@ const GuideSVG = (props) => (
 const TestList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
-  const { user } = useUser();
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
   const navigate = useNavigate();
 
   // Hardcoded score for demonstration
   const lastScore = "85/100";
   const userName = user?.firstName || "Student";
 
-  useEffect(() => {
-    fetchTestsWithStatus();
-  }, []);
+  // Cache key for localStorage
+  const TESTS_CACHE_KEY = `tests_cache_${user?.id || 'anonymous'}`;
+  const CACHE_EXPIRY_KEY = `tests_cache_expiry_${user?.id || 'anonymous'}`;
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  const fetchTestsWithStatus = async () => {
+  // Load tests from cache
+  const loadTestsFromCache = useCallback(() => {
     try {
-      const token = await getToken();
-      if (!token) {
-        console.error("No authentication token available");
-        setTests([]);
+      const cachedTests = localStorage.getItem(TESTS_CACHE_KEY);
+      const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+      
+      if (cachedTests && cacheExpiry && Date.now() < parseInt(cacheExpiry)) {
+        const parsedTests = JSON.parse(cachedTests);
+        console.log('Loading tests from cache:', parsedTests.length, 'tests');
+        setTests(parsedTests);
+        return true;
+      }
+    } catch (error) {
+      console.error('Error loading tests from cache:', error);
+    }
+    return false;
+  }, [TESTS_CACHE_KEY, CACHE_EXPIRY_KEY]);
+
+  // Save tests to cache
+  const saveTestsToCache = useCallback((testsData) => {
+    try {
+      localStorage.setItem(TESTS_CACHE_KEY, JSON.stringify(testsData));
+      localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION).toString());
+      console.log('Tests saved to cache:', testsData.length, 'tests');
+    } catch (error) {
+      console.error('Error saving tests to cache:', error);
+    }
+  }, [TESTS_CACHE_KEY, CACHE_EXPIRY_KEY, CACHE_DURATION]);
+
+  // Fetch function without useCallback to avoid circular dependencies
+  const fetchTestsWithStatus = async (showLoading = true) => {
+    console.log('fetchTestsWithStatus called, showLoading:', showLoading, 'isApiCallInProgress:', isApiCallInProgress);
+    
+    // Prevent multiple simultaneous API calls
+    if (isApiCallInProgress) {
+      console.log('API call already in progress, skipping...');
+      return;
+    }
+    
+    if (showLoading) {
+      setLoading(true);
+    }
+    setError(null);
+    setIsApiCallInProgress(true);
+    
+    try {
+      // Ensure authentication is fully ready before making API calls
+      if (!authLoaded || !userLoaded || !user) {
+        console.log("Authentication not fully ready yet - authLoaded:", authLoaded, "userLoaded:", userLoaded, "user:", !!user);
         return;
       }
       
+      const token = await getToken();
+      console.log('Token received:', token ? `Token: ${token.substring(0, 20)}...` : 'No token');
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+      
+      console.log('Making API call to:', "http://localhost:5000/api/v1/test/with-status");
       const response = await fetch("http://localhost:5000/api/v1/test/with-status", {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
-      const data = await response.json();
+      
+      console.log('Response status:', response.status, response.statusText);
+      
       if (response.ok) {
-        setTests(Array.isArray(data) ? data : []);
+        const data = await response.json();
+        const testsArray = Array.isArray(data) ? data : [];
+        console.log('Tests fetched successfully:', testsArray.length, 'tests');
+        setTests(testsArray);
+        saveTestsToCache(testsArray);
+        setRetryCount(0); // Reset retry count on success
       } else {
-        console.error("Failed to fetch tests:", data.message || "Unknown error");
-        setTests([]);
+        // Handle non-JSON error responses
+        let errorMessage = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || 'Unknown error';
+        } catch (jsonError) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error fetching tests:", error);
-      setTests([]);
+      setError(error.message || 'Failed to fetch tests');
+      
+      // Don't clear tests if we have cached data
+      // setTests([]) would clear existing cached tests
     } finally {
       setLoading(false);
+      setIsApiCallInProgress(false);
     }
   };
+
+  useEffect(() => {
+    console.log('TestList useEffect - authLoaded:', authLoaded, 'userLoaded:', userLoaded, 'user:', !!user);
+    
+    // Only proceed if both auth and user are loaded AND user exists
+    if (authLoaded && userLoaded && user) {
+      console.log('Authentication fully ready, proceeding with data loading...');
+      
+      // Try to load from cache first
+      const cacheLoaded = loadTestsFromCache();
+      if (cacheLoaded) {
+        setLoading(false);
+        console.log('Cache loaded, setting loading to false');
+      }
+      
+      // Always fetch fresh data, but don't show loading if cache was loaded
+      console.log('Fetching fresh test data...');
+      fetchTestsWithStatus(!cacheLoaded);
+    } else {
+      console.log('Authentication not ready yet, waiting...');
+      // Keep loading state while waiting for authentication
+      setLoading(true);
+    }
+  }, [authLoaded, userLoaded, user?.id]); // Remove fetchTestsWithStatus from dependencies
+
+  // Retry function
+  const handleRetry = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+    fetchTestsWithStatus(true);
+  }, []);
 
   const handleTakeTest = (testId, isCompleted) => {
     if (isCompleted) {
@@ -81,7 +185,7 @@ const TestList = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -163,15 +267,57 @@ const TestList = () => {
       <hr className="my-8" />
 
       {/* Available Tests Section */}
-      <h2 className="text-2xl font-bold mb-6">Available Tests</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Available Tests</h2>
+        {error && (
+          <Button
+            onClick={handleRetry}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <FiRefreshCw className="w-4 h-4" />
+            Retry
+          </Button>
+        )}
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <Card className="text-center py-8 mb-6 border-red-200 bg-red-50">
+          <CardContent className="flex flex-col items-center gap-4">
+            <FiAlertCircle className="w-12 h-12 text-red-500" />
+            <div>
+              <p className="text-red-700 font-medium">Failed to load tests</p>
+              <p className="text-red-600 text-sm mt-1">{error}</p>
+              {retryCount > 0 && (
+                <p className="text-red-500 text-xs mt-2">Retry attempt: {retryCount}</p>
+              )}
+            </div>
+            <Button onClick={handleRetry} variant="outline" size="sm">
+              <FiRefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       
-      {tests.length === 0 ? (
+      {tests.length === 0 && !error ? (
         <Card className="text-center py-8">
           <CardContent>
             <p className="text-gray-500">No tests available at the moment.</p>
+            <Button 
+              onClick={() => fetchTestsWithStatus(true)} 
+              variant="outline" 
+              size="sm" 
+              className="mt-4"
+            >
+              <FiRefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
           </CardContent>
         </Card>
-      ) : (
+      ) : tests.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tests.map(test => (
             <Card key={test._id} className="flex flex-col">
@@ -200,7 +346,7 @@ const TestList = () => {
             </Card>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

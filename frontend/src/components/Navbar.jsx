@@ -76,21 +76,21 @@ const Navbar = () => {
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
               <Link to="/admin/dashboard" className={isActive("/admin/dashboard") ? "bg-accent text-accent-foreground" : ""}>
-                Dashboard
+                Test Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
               <Link to="/admin/test-list" className={isActive("/admin/test-list") ? "bg-accent text-accent-foreground" : ""}>
-                Manage Tests
+                Student Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
               <Link to="/admin/add-test" className={isActive("/admin/add-test") ? "bg-accent text-accent-foreground" : ""}>
-                Add Test
+                Submissions
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>

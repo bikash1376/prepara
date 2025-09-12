@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 import {jwtDecode} from "jwt-decode";
 
 const AuthSuccess = () => {
@@ -76,7 +78,7 @@ const AuthSuccess = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <p className="text-lg mb-4">Processing authentication...</p>
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      <Loader2 className="h-12 w-12 animate-spin text-primary" />
     </div>
   );
 };
