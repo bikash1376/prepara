@@ -1,7 +1,4 @@
-// const cloudinary = require('cloudinary').v2;
-import cloudinary from 'cloudinary';
-
-const cloudinary = cloudinary.v2;
+import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary with environment variables
 cloudinary.config({
@@ -11,5 +8,4 @@ cloudinary.config({
   secure: true
 });
 
-// module.exports = cloudinary;
 export default cloudinary;

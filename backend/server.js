@@ -62,7 +62,7 @@ app.use("/api/v1/admin", adminRoutes);
 app.use('/api/v1/submission', submissionRoutes);
 
 // File upload routes
-app.use('/api/uploadthing', uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -119,9 +119,9 @@ const SubmissionHistory = () => {
   const testsPassed = submissions.filter(s => s.percentage >= 60).length;
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
+    <div className="container max-w-7xl mx-auto p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold flex items-center">
+        <h1 className="md:text-3xl text-2xl font-bold flex items-center">
           <FaHistory className="mr-3" />
           Submission History
         </h1>

@@ -73,7 +73,7 @@ const HomePage = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-2xl font-bold mb-4">
-        Welcome {user.firstName || user.emailAddresses[0]?.emailAddress}!
+        {/* Welcome {user.firstName || user.emailAddresses[0]?.emailAddress}! */}
       </h1>
 
       {/* Show Admin Dashboard link only if user is admin */}

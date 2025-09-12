@@ -28,6 +28,7 @@
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "uploadthing": "^7.7.4"
+    "uploadthing": "^7.7.4",
+    "uuid": "^13.0.0"
   }
 }
