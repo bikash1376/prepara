@@ -2,17 +2,22 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
-const TestViewer = () => {
+const TestViewer = ({ test: propTest, onSubmit, isPreview = false, isSubmitting = false }) => {
   const { id } = useParams();
-  const [test, setTest] = useState(null);
+  const [test, setTest] = useState(propTest);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [answers, setAnswers] = useState({});
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/v1/test/${id}`)
-      .then((res) => res.json())
-      .then((data) => setTest(data));
-  }, [id]);
+    if (propTest) {
+      setTest(propTest);
+    } else if (id) {
+      fetch(`http://localhost:5000/api/v1/test/${id}`)
+        .then((res) => res.json())
+        .then((data) => setTest(data));
+    }
+  }, [id, propTest]);
 
   if (!test) {
     return (
@@ -24,22 +29,51 @@ const TestViewer = () => {
     );
   }
 
-  const questions = test.questions;
+  // Handle both old format (test.questions) and new format (transformed questions)
+  const questions = test.questions || [];
   const question = questions[currentQuestionIdx];
 
   const handlePrev = () => {
     if (currentQuestionIdx > 0) {
+      // Save current answer before moving
+      if (selectedOption !== null) {
+        setAnswers(prev => ({ ...prev, [currentQuestionIdx]: selectedOption }));
+      }
       setCurrentQuestionIdx(currentQuestionIdx - 1);
-      setSelectedOption(null);
+      // Load previous answer
+      setSelectedOption(answers[currentQuestionIdx - 1] || null);
     }
   };
 
   const handleNext = () => {
+    // Save current answer before moving
+    if (selectedOption !== null) {
+      setAnswers(prev => ({ ...prev, [currentQuestionIdx]: selectedOption }));
+    }
+    
     if (currentQuestionIdx < questions.length - 1) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
-      setSelectedOption(null);
+      // Load next answer
+      setSelectedOption(answers[currentQuestionIdx + 1] || null);
     }
   };
+
+  const handleSubmit = () => {
+    // Save current answer
+    const finalAnswers = { ...answers };
+    if (selectedOption !== null) {
+      finalAnswers[currentQuestionIdx] = selectedOption;
+    }
+    
+    if (onSubmit) {
+      onSubmit(finalAnswers);
+    }
+  };
+
+  // Load saved answer when question changes
+  useEffect(() => {
+    setSelectedOption(answers[currentQuestionIdx] || null);
+  }, [currentQuestionIdx, answers]);
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white flex flex-col">
@@ -51,7 +85,7 @@ const TestViewer = () => {
           </span>
         </div>
         <button className="bg-zinc-600 text-white px-3 py-1 rounded text-sm">
-            <Link to="/test-list">Leave</Link>
+            <Link to={isPreview ? "/admin/test-list" : "/test-list"}>Leave</Link>
         </button>
       </header>
       <main className="flex flex-1 flex-col md:flex-row">
@@ -112,13 +146,23 @@ const TestViewer = () => {
             >
               Previous
             </button>
-            <button
-              onClick={handleNext}
-              disabled={currentQuestionIdx === questions.length - 1}
-              className="px-4 py-2 bg-black text-white rounded disabled:bg-gray-300"
-            >
-              Next
-            </button>
+            {currentQuestionIdx === questions.length - 1 && isPreview ? (
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+              >
+                {isSubmitting ? "Submitting..." : "Submit Test"}
+              </button>
+            ) : (
+              <button
+                onClick={handleNext}
+                disabled={currentQuestionIdx === questions.length - 1}
+                className="px-4 py-2 bg-black text-white rounded disabled:bg-gray-300"
+              >
+                Next
+              </button>
+            )}
           </div>
         </div>
       </main>
