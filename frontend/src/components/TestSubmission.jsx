@@ -471,7 +471,7 @@ const TestSubmission = () => {
       const parts = text.split(/(\$\$[^$]+\$\$|\$[^$]+\$)/);
       
       return (
-        <span>
+        <span style={{ whiteSpace: 'pre-wrap' }}>
           {parts.map((part, index) => {
             if (part.startsWith('$$') && part.endsWith('$$')) {
               // Block math
@@ -482,8 +482,8 @@ const TestSubmission = () => {
               const latex = part.slice(1, -1);
               return <InlineMath key={index} math={latex} />;
             } else {
-              // Regular text
-              return <span key={index}>{part}</span>;
+              // Regular text - preserve line breaks and spacing
+              return <span key={index} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
             }
           })}
         </span>
@@ -711,11 +711,10 @@ const TestSubmission = () => {
       </div>
 
       <div className="flex gap-6 mb-6">
-        <div
-          className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
-            showDesmos || showScientific ? "w-1/2" : "w-full"
-          }`}
-        >
+        {/* Question Panel - Left Side */}
+        <div className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
+          showDesmos || showScientific ? "w-1/4" : "w-1/2"
+        }`}>
           <div className="mb-4">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Question {currentQuestion + 1} of {module.questions.length}
@@ -741,12 +740,23 @@ const TestSubmission = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Options Panel - Right Side */}
+        <div className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
+          showDesmos || showScientific ? "w-1/4" : "w-1/2"
+        }`}>
+          <div className="mb-4">
+            <span className="font-medium text-gray-800 dark:text-gray-200">
+              Which choice completes the text with the most logical and precise word or phrase?
+            </span>
+          </div>
 
           <div className="space-y-3">
             {q.options.map((option, optionIndex) => (
               <div key={optionIndex} className="flex items-center gap-3">
                 <label
-                  className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-3/5 ${
+                  className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-full ${
                     answersArr[currentQuestion] === option
                       ? "border-black dark:border-white bg-black-50 dark:bg-neutral-900"
                       : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -764,6 +774,10 @@ const TestSubmission = () => {
                     onChange={() => handleAnswerChange(currentQuestion, option)}
                     className="mr-3"
                   />
+
+                  <span className="font-semibold mr-2 text-gray-700 dark:text-gray-300">
+                    {String.fromCharCode(65 + optionIndex)}.
+                  </span>
 
                   <span className="text-gray-700 dark:text-gray-300">
                     <LaTeXRenderer text={option} />
@@ -783,20 +797,6 @@ const TestSubmission = () => {
                 </button>
               </div>
             ))}
-          </div>
-
-          {/* Mark for Review Button */}
-          <div className="mt-4 flex justify-between items-center">
-            <button
-              onClick={() => toggleQuestionForReview(currentQuestion)}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                getReviewedQuestions().has(currentQuestion)
-                  ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-              }`}
-            >
-              {getReviewedQuestions().has(currentQuestion) ? "Remove from Review" : "Mark for Review"}
-            </button>
           </div>
         </div>
 
