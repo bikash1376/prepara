@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import { useAuth } from "@clerk/clerk-react";
-import { ChevronDown, Loader2, MoreVertical, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
 
@@ -17,7 +17,6 @@ const TestSubmission = () => {
   const [currentModule, setCurrentModule] = useState(0);
   const [moduleAnswers, setModuleAnswers] = useState({}); // {sectionIdx: {moduleIdx: [answers]}}
   const [reviewedQuestions, setReviewedQuestions] = useState({}); // {sectionIdx: {moduleIdx: Set of question indices}}
-  const [struckOutOptions, setStruckOutOptions] = useState({}); // {sectionIdx: {moduleIdx: {questionIdx: Set of option indices}}}
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timer, setTimer] = useState(0);
   const [breakTime, setBreakTime] = useState(0);
@@ -33,8 +32,6 @@ const TestSubmission = () => {
   const [startTime] = useState(Date.now());
   const [showTimer, setShowTimer] = useState(true);
   const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
-  const [isQuestionSwitchOpen, setIsQuestionSwitchOpen] = useState(false);
-  const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
 
   // Load Desmos API
   useEffect(() => {
@@ -235,37 +232,6 @@ const TestSubmission = () => {
     });
   };
 
-  // Toggle strike-through for option
-  const toggleStrikeThrough = (questionIdx, optionIdx) => {
-    setStruckOutOptions((prev) => {
-      const sec = { ...(prev[currentSection] || {}) };
-      const mod = { ...(sec[currentModule] || {}) };
-      const questionSet = new Set(mod[questionIdx] || []);
-      
-      if (questionSet.has(optionIdx)) {
-        questionSet.delete(optionIdx);
-      } else {
-        questionSet.add(optionIdx);
-      }
-      
-      return { 
-        ...prev, 
-        [currentSection]: { 
-          ...sec, 
-          [currentModule]: { 
-            ...mod, 
-            [questionIdx]: questionSet 
-          } 
-        } 
-      };
-    });
-  };
-
-  // Get struck out options for current question
-  const getStruckOutOptions = () => {
-    return struckOutOptions[currentSection]?.[currentModule]?.[currentQuestion] || new Set();
-  };
-
   // Get current module's reviewed questions set
   const getReviewedQuestions = () => {
     return (reviewedQuestions[currentSection] && 
@@ -403,59 +369,24 @@ const TestSubmission = () => {
 
   if (inBreak) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-12 max-w-md w-full mx-4 text-center">
-          <div className="mb-8">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Break Time</h2>
-            <p className="text-gray-600 dark:text-gray-400">Take a moment to rest before continuing</p>
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Break Time</h2>
+        <div className="text-4xl mb-6">{breakTime}s</div>
+        {breakTime > 0 ? (
+          <div className="text-gray-600">
+            Relax! You can continue once the break ends.
           </div>
-
-          <div className="mb-8">
-            <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2">{Math.floor(breakTime / 60)}:{(breakTime % 60).toString().padStart(2, '0')}</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Time remaining</p>
-          </div>
-
-          {breakTime > 0 ? (
-            <div className="space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                <p className="text-blue-800 dark:text-blue-200 text-sm">
-                  You can relax during this break. The next section will begin automatically when the timer reaches zero.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setInBreak(false);
-                  goToNextModuleOrSection();
-                }}
-                className="w-full px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
-              >
-                Skip Break & Continue
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                <p className="text-green-800 dark:text-green-200 text-sm font-medium">
-                  Break time is over. You may now continue to the next section.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setInBreak(false);
-                  goToNextModuleOrSection();
-                }}
-                className="w-full px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium shadow-md"
-              >
-                Continue to Next Section →
-              </button>
-            </div>
-          )}
-        </div>
+        ) : (
+          <button
+            onClick={() => {
+              setInBreak(false);
+              goToNextModuleOrSection();
+            }}
+            className="px-8 py-3 bg-black text-white rounded hover:bg-gray-800"
+          >
+            Continue to Next Module →
+          </button>
+        )}
       </div>
     );
   }
@@ -493,169 +424,6 @@ const TestSubmission = () => {
     }
   };
 
-  // Question Switch Dialog Component
-  const QuestionSwitchDialog = ({ open, onOpenChange }) => {
-    if (!open) return null;
-
-    const handleQuestionSelect = (qIdx) => {
-      jumpToQuestion(qIdx);
-      onOpenChange(false);
-    };
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50"
-          onClick={() => onOpenChange(false)}
-        />
-        
-        {/* Dialog */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Select Question</h2>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mb-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span>Answered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-              <span>For Review</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-300 rounded"></div>
-              <span>Unanswered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded ring-2 ring-blue-300"></div>
-              <span>Current</span>
-            </div>
-          </div>
-
-          {/* Question Grid */}
-          <div className="grid grid-cols-8 gap-3">
-            {module.questions.map((_, qIdx) => {
-              const isAnswered = answersArr[qIdx] !== "";
-              const isForReview = getReviewedQuestions().has(qIdx);
-              const isCurrent = qIdx === currentQuestion;
-              
-              let bgColor = "bg-gray-300 hover:bg-gray-400";
-              if (isAnswered && isForReview) {
-                bgColor = "bg-yellow-500 hover:bg-yellow-600";
-              } else if (isAnswered) {
-                bgColor = "bg-green-500 hover:bg-green-600";
-              } else if (isForReview) {
-                bgColor = "bg-yellow-400 hover:bg-yellow-500";
-              }
-              
-              return (
-                <button
-                  key={qIdx}
-                  onClick={() => handleQuestionSelect(qIdx)}
-                  className={`w-12 h-12 rounded-lg text-white font-semibold transition-all ${bgColor} ${
-                    isCurrent ? "ring-4 ring-blue-500 ring-offset-2" : ""
-                  } hover:scale-105 shadow-md`}
-                >
-                  {qIdx + 1}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Question {currentQuestion + 1} of {module.questions.length} • {section.name} - {module.name}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Submit Confirmation Dialog Component
-  const SubmitConfirmationDialog = ({ open, onOpenChange }) => {
-    if (!open) return null;
-
-    const isLastModule = currentModule === section.modules.length - 1 && currentSection === test.sections.length - 1;
-
-    const handleConfirmSubmit = () => {
-      onOpenChange(false);
-      handleModuleSubmit();
-    };
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50"
-          onClick={() => onOpenChange(false)}
-        />
-        
-        {/* Dialog */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                {isLastModule ? "Submit Test" : "Submit Module"}
-              </h2>
-            </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              {isLastModule 
-                ? "You are about to submit your entire test. Once submitted, you will not be able to make any changes or return to review your answers."
-                : "You are about to submit this module. Once submitted, you will not be able to return to this module or make any changes to your answers."
-              }
-            </p>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-              <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium">
-                ⚠️ This action cannot be undone
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => onOpenChange(false)}
-              className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmSubmit}
-              disabled={submitting}
-              className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50 transition-colors font-medium"
-            >
-              {submitting ? "Submitting..." : (isLastModule ? "Submit Test" : "Submit Module")}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="max-w-full mx-auto mt-1 p-6">
       <ExamNavbar
@@ -676,52 +444,67 @@ const TestSubmission = () => {
         onOpenChange={setIsDirectionsOpen}
       />
 
-      <QuestionSwitchDialog
-        open={isQuestionSwitchOpen}
-        onOpenChange={setIsQuestionSwitchOpen}
-      />
-
-      <SubmitConfirmationDialog
-        open={isSubmitConfirmOpen}
-        onOpenChange={setIsSubmitConfirmOpen}
-      />
-
       {/* Question Navigation Panel */}
-      <div className="flex justify-end items-center gap-4 mb-6">
-        <button
-          onClick={() => toggleQuestionForReview(currentQuestion)}
-          className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-            getReviewedQuestions().has(currentQuestion)
-              ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-          }`}
-        >
-          {getReviewedQuestions().has(currentQuestion) ? "Remove from Review" : "Mark for Review"}
-        </button>
-        
-        <div className="flex justify-end items-center gap-4">
-          <button
-            onClick={() => setIsQuestionSwitchOpen(true)}
-            className="px-4 py-2 rounded text-sm font-medium transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-between"
-          >
-            Question {currentQuestion + 1} of {module.questions.length}
-            <ChevronDown className="ml-2 w-5 h-5" />
-          </button>
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">Questions</h3>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-500 rounded"></div>
+              <span>Answered</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+              <span>For Review</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-gray-300 rounded"></div>
+              <span>Unanswered</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-10 gap-2">
+          {module.questions.map((_, qIdx) => {
+            const isAnswered = answersArr[qIdx] !== "";
+            const isForReview = getReviewedQuestions().has(qIdx);
+            const isCurrent = qIdx === currentQuestion;
+            
+            let bgColor = "bg-gray-300";
+            if (isAnswered && isForReview) {
+              bgColor = "bg-yellow-500";
+            } else if (isAnswered) {
+              bgColor = "bg-green-500";
+            } else if (isForReview) {
+              bgColor = "bg-yellow-400";
+            }
+            
+            return (
+              <button
+                key={qIdx}
+                onClick={() => jumpToQuestion(qIdx)}
+                className={`w-8 h-8 rounded text-white text-sm font-medium transition-all ${bgColor} ${
+                  isCurrent ? "ring-2 ring-blue-500 ring-offset-1" : ""
+                } hover:scale-105`}
+              >
+                {qIdx + 1}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <div className="flex gap-6 mb-6">
         <div
-          className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
+          className={`rounded-lg shadow-md p-6 transition-all duration-300 ${
             showDesmos || showScientific ? "w-1/2" : "w-full"
           }`}
         >
           <div className="mb-4">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-500">
               Question {currentQuestion + 1} of {module.questions.length}
             </span>
 
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
+            <h2 className="text-xl font-semibold text-gray-800 mt-2">
               <LaTeXRenderer text={q.question} />
             </h2>
             
@@ -744,44 +527,27 @@ const TestSubmission = () => {
 
           <div className="space-y-3">
             {q.options.map((option, optionIndex) => (
-              <div key={optionIndex} className="flex items-center gap-3">
-                <label
-                  className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-3/5 ${
-                    answersArr[currentQuestion] === option
-                      ? "border-black dark:border-white bg-black-50 dark:bg-neutral-900"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  } ${
-                    getStruckOutOptions().has(optionIndex) 
-                      ? 'relative after:content-[""] after:absolute after:top-1/2 after:left-0 after:right-0 after:h-0.5 after:bg-red-500 after:transform after:-translate-y-1/2 opacity-50' 
-                      : ''
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`question-${currentQuestion}`}
-                    value={option}
-                    checked={answersArr[currentQuestion] === option}
-                    onChange={() => handleAnswerChange(currentQuestion, option)}
-                    className="mr-3"
-                  />
+              <label
+                key={optionIndex}
+                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  answersArr[currentQuestion] === option
+                    ? "border-black bg-black-50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`question-${currentQuestion}`}
+                  value={option}
+                  checked={answersArr[currentQuestion] === option}
+                  onChange={() => handleAnswerChange(currentQuestion, option)}
+                  className="mr-3"
+                />
 
-                  <span className="text-gray-700 dark:text-gray-300">
-                    <LaTeXRenderer text={option} />
-                  </span>
-                </label>
-                
-                <button
-                  onClick={() => toggleStrikeThrough(currentQuestion, optionIndex)}
-                  className={`p-2 rounded-full transition-colors ${
-                    getStruckOutOptions().has(optionIndex)
-                      ? "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  }`}
-                  title={getStruckOutOptions().has(optionIndex) ? "Remove strike-through" : "Strike through option"}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+                <span className="text-gray-700">
+                  <LaTeXRenderer text={option} />
+                </span>
+              </label>
             ))}
           </div>
 
@@ -791,8 +557,8 @@ const TestSubmission = () => {
               onClick={() => toggleQuestionForReview(currentQuestion)}
               className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                 getReviewedQuestions().has(currentQuestion)
-                  ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                  ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               {getReviewedQuestions().has(currentQuestion) ? "Remove from Review" : "Mark for Review"}
@@ -801,16 +567,16 @@ const TestSubmission = () => {
         </div>
 
         {(showDesmos || showScientific) && (
-          <div className="w-1/2 bg-white dark:bg-neutral-950 rounded-lg shadow-md p-4">
+          <div className="w-1/2 rounded-lg shadow-md p-4">
             {showDesmos && (
               <div className="h-full">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-800">
                     Desmos Calculator
                   </h3>
                   <button
                     onClick={() => setShowDesmos(false)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
+                    className="text-gray-500 hover:text-gray-700 text-xl"
                   >
                     ×
                   </button>
@@ -818,7 +584,7 @@ const TestSubmission = () => {
 
                 <div
                   ref={desmosRef}
-                  className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
+                  className="w-full h-96 border border-gray-200 rounded-lg"
                   style={{ minHeight: "384px" }}
                 ></div>
               </div>
@@ -827,12 +593,12 @@ const TestSubmission = () => {
             {showScientific && (
               <div className="h-full">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-800">
                     Scientific Calculator
                   </h3>
                   <button
                     onClick={() => setShowScientific(false)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
+                    className="text-gray-500 hover:text-gray-700 text-xl"
                   >
                     ×
                   </button>
@@ -840,7 +606,7 @@ const TestSubmission = () => {
 
                 <div
                   ref={scientificRef}
-                  className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
+                  className="w-full h-96 border border-gray-200 rounded-lg"
                   style={{ minHeight: "384px" }}
                 ></div>
               </div>
@@ -849,12 +615,12 @@ const TestSubmission = () => {
         )}
       </div>
 
-      <div className="bg-white dark:bg-neutral-950 rounded-lg p-6">
+      <div className="rounded-lg p-6">
         <div className="flex justify-between items-center">
           {currentQuestion > 0 && (
             <button
               onClick={() => setCurrentQuestion(currentQuestion - 1)}
-              className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
             >
               ← Previous
             </button>
@@ -865,13 +631,13 @@ const TestSubmission = () => {
           {currentQuestion < module.questions.length - 1 ? (
             <button
               onClick={() => setCurrentQuestion(currentQuestion + 1)}
-              className="px-6 py-2 bg-black dark:bg-gray-900 text-white rounded hover:bg-gray-800 dark:hover:bg-gray-700"
+              className="px-6 py-2 bg-black text-white rounded hover:bg-gray-800"
             >
               Next →
             </button>
           ) : (
             <button
-              onClick={() => setIsSubmitConfirmOpen(true)}
+              onClick={handleModuleSubmit}
               disabled={submitting}
               className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >

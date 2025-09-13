@@ -63,11 +63,11 @@ export const protect = async (req, res, next) => {
         role: role
       };
       
-      console.log("Auth middleware - User authenticated:", {
-        id: userId,
-        role: role,
-        email: clerkUser.emailAddresses[0]?.emailAddress
-      });
+      // console.log("Auth middleware - User authenticated:", {
+      //   id: userId,
+      //   role: role,
+      //   email: clerkUser.emailAddresses[0]?.emailAddress
+      // });
       
       // Continue to next middleware
       next();

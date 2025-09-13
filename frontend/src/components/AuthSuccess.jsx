@@ -14,10 +14,10 @@ const AuthSuccess = () => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
 
-        console.log("AuthSuccess: Token received:", token ? "Yes" : "No");
+        // console.log("AuthSuccess: Token received:", token ? "Yes" : "No");
 
         if (!token) {
-          console.log("AuthSuccess: No token found, redirecting to login");
+          // console.log("AuthSuccess: No token found, redirecting to login");
           setError("No authentication token received");
           setTimeout(() => navigate("/login"), 2000);
           return;
@@ -25,7 +25,7 @@ const AuthSuccess = () => {
 
         // Validate token format
         if (token.split('.').length !== 3) {
-          console.log("AuthSuccess: Invalid token format");
+          // console.log("AuthSuccess: Invalid token format");
           setError("Invalid token format");
           setTimeout(() => navigate("/login"), 2000);
           return;
@@ -35,10 +35,10 @@ const AuthSuccess = () => {
 
         // Decode token to extract role
         const decoded = jwtDecode(token);
-        console.log("AuthSuccess: Decoded token:", decoded);
+        // console.log("AuthSuccess: Decoded token:", decoded);
         
         if (!decoded.role) {
-          console.log("AuthSuccess: No role in token");
+          // console.log("AuthSuccess: No role in token");
           setError("Invalid token - no role found");
           setTimeout(() => navigate("/login"), 2000);
           return;
@@ -46,7 +46,7 @@ const AuthSuccess = () => {
 
         localStorage.setItem("role", decoded.role);
 
-        console.log("AuthSuccess: Redirecting to dashboard for role:", decoded.role);
+        // console.log("AuthSuccess: Redirecting to dashboard for role:", decoded.role);
 
         // Small delay to ensure localStorage is fully updated before navigation
         setTimeout(() => {

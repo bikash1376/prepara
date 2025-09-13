@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton"; // For loading state
 
 // Custom Components
 import ImageUpload from "./ImageUpload";
+import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from "./ui/select";
 
 // Your existing state initialization and deep copy helpers remain unchanged
 const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "", image: null };
@@ -333,9 +334,26 @@ const EditTest = () => {
                                                                         ))}
                                                                     </div>
                                                                     <div>
-                                                                        <Label htmlFor={`answer-${sIdx}-${mIdx}-${qIdx}`}>Correct Answer</Label>
-                                                                        <Input id={`answer-${sIdx}-${mIdx}-${qIdx}`} placeholder="Must match one option exactly" value={q.answer} onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "answer", e.target.value)} required />
-                                                                    </div>
+    <Label htmlFor={`answer-${sIdx}-${mIdx}-${qIdx}`}>Correct Answer</Label>
+    <Select
+        value={q.answer}
+        onValueChange={(value) => handleQuestionChange(sIdx, mIdx, qIdx, "answer", value)}
+        required
+    >
+        <SelectTrigger id={`answer-${sIdx}-${mIdx}-${qIdx}`}>
+            <SelectValue placeholder="Select the correct answer" />
+        </SelectTrigger>
+        <SelectContent>
+            {q.options.map((opt, optIdx) => (
+                // Use the option text as both the value and the display text.
+                // Filter out empty options so they don't appear in the dropdown.
+                opt && <SelectItem key={optIdx} value={opt}>{opt}</SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
+</div>
+
+
                                                                     <div>
                                                                         <Label htmlFor={`exp-${sIdx}-${mIdx}-${qIdx}`}>Explanation (Optional)</Label>
                                                                         <Textarea id={`exp-${sIdx}-${mIdx}-${qIdx}`} value={q.explanation || ""} onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "explanation", e.target.value)} rows={2} />

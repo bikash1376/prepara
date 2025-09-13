@@ -103,13 +103,13 @@ export const submitTest = async (req, res) => {
 export const getSubmissionHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log("Fetching submission history for user:", userId);
+    // console.log("Fetching submission history for user:", userId);
     
     const submissions = await Submission.find({ userId })
       .select('testName score totalQuestions percentage submittedAt timeTaken')
       .sort({ submittedAt: -1 });
 
-    console.log("Found submissions:", submissions.length);
+   // console.log("Found submissions:", submissions.length);
     res.json(submissions);
   } catch (error) {
     console.error('Get submission history error:', error);

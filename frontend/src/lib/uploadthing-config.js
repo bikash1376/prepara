@@ -17,16 +17,16 @@ export const { useUploadThing, uploadFiles } = generateReactHelpers({
   // Optional: Add default options for all uploads
   defaultOptions: {
     onUploadBegin: (file) => {
-      console.log('Upload starting:', file.name);
+      // console.log('Upload starting:', file.name);
     },
     onUploadProgress: (progress) => {
-      console.log(`Upload progress: ${progress}%`);
+      // console.log(`Upload progress: ${progress}%`);
     },
     onUploadError: (error) => {
       console.error('Upload error:', error);
     },
     onClientUploadComplete: (res) => {
-      console.log('Upload completed:', res);
+      // console.log('Upload completed:', res);
     },
   },
 });

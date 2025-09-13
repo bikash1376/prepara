@@ -27,7 +27,7 @@ const TestResults = () => {
     setLoading(true);
     try {
       if (!authLoaded) {
-        console.log("Authentication not loaded yet");
+        // console.log("Authentication not loaded yet");
         return;
       }
       

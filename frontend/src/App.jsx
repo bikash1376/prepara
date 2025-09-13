@@ -23,6 +23,7 @@ import StudentMgmt from "./components/StudentMgmt";
 import AdminSubmissions from "./components/AdminSubmissions";
 import AdminTestPreview from "./components/AdminTestPreview";
 import Tests from "./components/Tests";
+import AdminAiChat from "./components/AdminAiChat";
 
 // Protected home page with Clerk authentication
 const HomePage = () => {
@@ -213,6 +214,15 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminSubmissions />
+            </ProtectedRoute>
+          } 
+        />
+
+<Route 
+          path="/admin/ai-chat" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminAiChat />
             </ProtectedRoute>
           } 
         />

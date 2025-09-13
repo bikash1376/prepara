@@ -30,24 +30,24 @@ const SubmissionHistory = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('SubmissionHistory useEffect - authLoaded:', authLoaded);
+    // console.log('SubmissionHistory useEffect - authLoaded:', authLoaded);
     if (authLoaded) {
-      console.log('Auth loaded, fetching submission history...');
+      // console.log('Auth loaded, fetching submission history...');
       fetchSubmissionHistory();
     }
   }, [authLoaded]);
 
   const fetchSubmissionHistory = async () => {
-    console.log('fetchSubmissionHistory called');
+    // console.log('fetchSubmissionHistory called');
     setLoading(true);
     try {
       if (!authLoaded) {
-        console.log("Authentication not loaded yet");
+        // console.log("Authentication not loaded yet");
         return;
       }
       
       const token = await getToken();
-      console.log('Token received:', token ? `Token: ${token.substring(0, 20)}...` : 'No token');
+      // console.log('Token received:', token ? `Token: ${token.substring(0, 20)}...` : 'No token');
       if (!token) {
         console.error("No authentication token available");
         setSubmissions([]);
@@ -55,14 +55,14 @@ const SubmissionHistory = () => {
         return;
       }
       
-      console.log('Making API call to:', "http://localhost:5000/api/v1/submission/history");
+      // console.log('Making API call to:', "http://localhost:5000/api/v1/submission/history");
       const response = await fetch("http://localhost:5000/api/v1/submission/history", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       
-      console.log('Response status:', response.status, response.statusText);
+      // console.log('Response status:', response.status, response.statusText);
       
       if (response.ok) {
         const data = await response.json();

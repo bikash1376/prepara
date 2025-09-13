@@ -23,6 +23,7 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 import { HamburgerMenuIcon, SunIcon, MoonIcon, DesktopIcon } from "@radix-ui/react-icons";
+import { Sparkles } from "lucide-react";
 
 const Navbar = () => {
   const location = useLocation();
@@ -94,6 +95,13 @@ const Navbar = () => {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
+          {/* <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/admin/ai-chat" className={isActive("/admin/ai-chat") ? "bg-accent text-accent-foreground font-bold" : ""}>
+              <Sparkles />
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem> */}
         </>
       )}
     </>
@@ -125,18 +133,18 @@ const Navbar = () => {
       {role === "admin" && (
         <>
           <SheetClose asChild>
-            <Link to="/admin/dashboard" className={` block py-2 ${isActive("/admin/dashboard") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
-              Dashboard
+            <Link to="/admin/test-list" className={` block py-2 ${isActive("/admin/dashboard") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Test Management
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Link to="/admin/test-list" className={`block py-2 ${isActive("/admin/test-list") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
-              Manage Tests
+            <Link to="/admin/student-management" className={`block py-2 ${isActive("/admin/student-management") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Student Management
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Link to="/admin/add-test" className={`block py-2 ${isActive("/admin/add-test") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
-              Add Test
+            <Link to="/admin/submissions" className={`block py-2 ${isActive("/admin/submissions") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            Submissions
             </Link>
           </SheetClose>
         </>
@@ -178,8 +186,21 @@ const Navbar = () => {
 
             {/* User Button */}
             <div className="flex items-center space-x-2">
-              <UserButton afterSignOutUrl="/login" />
-              <span>{user.firstName}</span>
+              <UserButton afterSignOutUrl="/login" 
+              // showName
+              />
+              <span 
+                className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={() => {
+                  // Programmatically click the UserButton to open the menu
+                  const userButton = document.querySelector('[data-clerk-element="userButton"]');
+                  if (userButton) {
+                    userButton.click();
+                  }
+                }}
+              >
+                {user.firstName}
+              </span>
             </div>
 
 

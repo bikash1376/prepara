@@ -76,10 +76,10 @@ export const getAllTests = async (req, res) => {
 export const getAllTestsWithStatus = async (req, res) => {
     try {
         const userId = req.user.id;
-        console.log("Fetching tests for user:", userId);
+    //   console.log("Fetching tests for user:", userId);
         
         const tests = await Test.find().select('_id testname');
-        console.log("Found tests:", tests.length);
+    //   console.log("Found tests:", tests.length);
         
         // Get user's submissions
         const userSubmissions = await Submission.find({ userId }).select('testId');

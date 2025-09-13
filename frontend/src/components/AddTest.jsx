@@ -221,7 +221,7 @@ const AddTest = () => {
       <form onSubmit={handleSubmit}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Create a New Test</h1>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="fixed bottom-4 right-30">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? "Saving..." : "Save Test"}
           </Button>
@@ -272,7 +272,7 @@ const AddTest = () => {
                         </div>
                         <div>
                           <Label htmlFor={`break-${sIdx}`} className="mb-2">Break After Section (seconds)</Label>
-                          <Input id={`break-${sIdx}`} type="number" value={section.breakAfter.duration} onChange={e => handleBreakChange(sIdx, Number(e.target.value))} min={0} />
+                          <Input id={`break-${sIdx}`} type="number" value={600} disabled onChange={e => handleBreakChange(sIdx, Number(e.target.value))} min={0} />
                         </div>
                       </div>
 
@@ -295,7 +295,10 @@ const AddTest = () => {
                                 </div>
                                 <div>
                                   <Label htmlFor={`timer-${sIdx}-${mIdx}`} className="mb-2">Timer (seconds)</Label>
-                                  <Input id={`timer-${sIdx}-${mIdx}`} type="number" value={module.timer} onChange={e => handleModuleChange(sIdx, mIdx, "timer", Number(e.target.value))} min={60} required />
+                                  <Input id={`timer-${sIdx}-${mIdx}`} type="number" 
+                                  // value={module.timer} 
+                                  value={2100} disabled
+                                  onChange={e => handleModuleChange(sIdx, mIdx, "timer", Number(e.target.value))} min={60} required />
                                 </div>
                               </div>
 
@@ -319,9 +322,9 @@ const AddTest = () => {
                                           required
                                         />
                                         {q.question && (
-                                          <div className="mt-2">
+                                          <div className="mt-2 bg-black">
                                             <Label className="text-sm text-gray-600">Preview:</Label>
-                                            <LaTeXPreview text={q.question} />
+                                            <LaTeXPreview className="dark:text-white bg-black" text={q.question} />
                                           </div>
                                         )}
                                       </div>
@@ -336,11 +339,11 @@ const AddTest = () => {
                                               placeholder="Use $...$ for inline math"
                                               required
                                             />
-                                            {opt && (
+                                            {/* {opt && (
                                               <div className="mt-1">
                                                 <LaTeXPreview text={opt} />
                                               </div>
-                                            )}
+                                            )} */}
                                           </div>
                                         ))}
                                       </div>

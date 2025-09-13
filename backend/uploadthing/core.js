@@ -19,7 +19,7 @@ export const uploadRouter = {
   .middleware(async ({ req, res }) => {
     // This code runs on the server before upload
     // Add any authentication/authorization logic here
-    console.log('Upload middleware - checking auth');
+    // console.log('Upload middleware - checking auth');
     
     // Example: Verify user is authenticated
     // if (!req.user) {
@@ -34,7 +34,7 @@ export const uploadRouter = {
   })
   .onUploadComplete(async ({ metadata, file }) => {
     // This code runs after successful upload
-    console.log('Upload completed:', { file, metadata });
+    // console.log('Upload completed:', { file, metadata });
     
     // You can perform any additional operations here, like:
     // - Store the file URL in your database
