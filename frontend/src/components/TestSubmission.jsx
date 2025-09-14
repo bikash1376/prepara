@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { ChevronDown, Loader2, MoreVertical, X } from "lucide-react";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
+import { Separator } from "./ui/separator";
 
 const TestSubmission = () => {
   const { id } = useParams();
@@ -711,7 +712,7 @@ const TestSubmission = () => {
         </div>
       </div>
 
-      <div className="flex gap-6 mb-6">
+      <div className="flex gap-6 mb-6 ">
         {/* Question Panel - Left Side */}
         <div className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
           showDesmos || showScientific ? "w-1/4" : "w-1/2"
@@ -721,7 +722,7 @@ const TestSubmission = () => {
               Question {currentQuestion + 1} of {module.questions.length}
             </span>
 
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
+            <h2 className="font-serif text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
               <LaTeXRenderer text={q.question} />
             </h2>
             
@@ -759,7 +760,7 @@ const TestSubmission = () => {
                 <label
                   className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-full ${
                     answersArr[currentQuestion] === option
-                      ? "border-black dark:border-white bg-black-50 dark:bg-neutral-900"
+                      ? "border-black border-2 dark:border-white bg-black-50 dark:bg-neutral-900"
                       : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
                   } ${
                     getStruckOutOptions().has(optionIndex) 

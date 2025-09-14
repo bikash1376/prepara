@@ -17,7 +17,8 @@ const ExamNavbar = ({
   currentSection = 0
 }) => {
   return (
-    <div className="z-50 flex items-center justify-between w-full px-6 py-2 bg-white dark:bg-neutral-950 shadow rounded-lg mb-6">
+    <div className="z-50 flex items-center justify-between w-full px-6 py-2 bg-white dark:bg-neutral-950 pb-8 mb-8 border-b-2 border-gray-600">
+      {/* // <div className="w-full fixed top-0 left-0 z-50 flex items-center justify-between px-6 py-2 bg-white dark:bg-neutral-950 border-b-2 border-gray-600"> */}
       
       {/* Left: Test Info */}
       <div className="flex flex-col text-gray-800 dark:text-gray-200 font-medium">
