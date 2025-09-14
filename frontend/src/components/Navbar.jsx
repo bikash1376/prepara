@@ -133,7 +133,7 @@ const Navbar = () => {
       {role === "admin" && (
         <>
           <SheetClose asChild>
-            <Link to="/admin/test-list" className={` block py-2 ${isActive("/admin/dashboard") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/admin/test-list" className={` block py-2 ${isActive("/admin/test-list") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
             Test Management
             </Link>
           </SheetClose>

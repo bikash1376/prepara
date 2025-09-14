@@ -107,22 +107,12 @@ testRoutes.delete('/:id', protect, isAdmin, deleteTest);
 
 
 NOtes 
-✅graphing not working properly [high priority]
-desmos coordinates 
+
 ⚠️fill in the blanks missing
-✅name of calculator should be visible while in test 
-![alt text](image.png) the message should contain info on sectionwise timings 
-✅submit module should only be available in the last question and it should not be in the same place as the next button
-✅there should be a timeline for content movement switching between questions 
-there should be a cancel button to cancel out options 
-the timer should show in red when the time left is = 5mins 
-✅the timer could be green 
-mark for review missing 
-formula booklet missing 
-✅skippable mid break [add info similar to college board]
-when submitting test there should be a popup "do you want to submit the test?" sub : "do u want to submit the module ?"
-when starting a new module need a new page to show what module are we starting and what is the time limit for that 
-Paragraph change not detected
-ADMIN : Have the ability to hide an uploaded paper
-Disable calculator for the english section and make it prominent in the math section 
-include : formula booklet
+⚠️![alt text](image.png) the message should contain info on sectionwise timings 
+⚠️Fix dialogs/modals (ref: Bluebook) [looks ai generated]
+⚠️when starting a new module need a new page to show what module are we starting and what is the time limit for that 
+⚠️ADMIN : Have the ability to hide an uploaded paper
+⚠️include : formula booklet
+⚠️remove hardcode values [multiple pages --reproduce]
+⚠️submission history and scores

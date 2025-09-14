@@ -13,7 +13,8 @@ const ExamNavbar = ({
   setIsDirectionsOpen,
   setShowDesmos,
   setShowScientific,
-  navigate
+  navigate,
+  currentSection = 0
 }) => {
   return (
     <div className="z-50 flex items-center justify-between w-full px-6 py-2 bg-white dark:bg-neutral-950 shadow rounded-lg mb-6">
@@ -49,27 +50,32 @@ const ExamNavbar = ({
       {/* Right: Tools & Menu */}
       <div className="flex items-center gap-2"> {/* New container for right-side elements */}
         
-        {/* Graphing Calculator Button */}
-        <Button
-          variant="outline"
-          onClick={() => {
-            setShowDesmos(true);
-            setShowScientific(false);
-          }}
-        >
-          <Calculator className="w-4 h-4 mr-2" /> Desmos
-        </Button>
+        {/* Calculator Buttons - Hidden in first section (section 0) */}
+        {currentSection > 0 && (
+          <>
+            {/* Graphing Calculator Button */}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDesmos(true);
+                setShowScientific(false);
+              }}
+            >
+              <Calculator className="w-4 h-4 mr-2" /> Desmos
+            </Button>
 
-        {/* Scientific Calculator Button */}
-        <Button
-          variant="outline"
-          onClick={() => {
-            setShowScientific(true);
-            setShowDesmos(false);
-          }}
-        >
-          <Calculator className="w-4 h-4 mr-2" /> Scientific
-        </Button>
+            {/* Scientific Calculator Button */}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowScientific(true);
+                setShowDesmos(false);
+              }}
+            >
+              <Calculator className="w-4 h-4 mr-2" /> Scientific
+            </Button>
+          </>
+        )}
 
         {/* More menu now only contains "Leave Test" */}
         <DropdownMenu>

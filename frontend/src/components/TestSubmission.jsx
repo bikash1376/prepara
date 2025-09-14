@@ -669,6 +669,7 @@ const TestSubmission = () => {
         setShowDesmos={setShowDesmos}
         setShowScientific={setShowScientific}
         navigate={navigate}
+        currentSection={currentSection}
       />
 
       <DirectionsDialog
