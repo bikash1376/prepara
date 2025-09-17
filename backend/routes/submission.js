@@ -3,7 +3,8 @@ import {
   submitTest,
   getSubmissionHistory,
   getSubmissionReview,
-  getTestSubmissions
+  getTestSubmissions,
+  getUserSubmissions
 } from '../controllers/submissionController.js';
 import { protect, isAdmin } from '../middlewares/authMiddleware.js';
 
@@ -26,5 +27,6 @@ router.get('/review/:submissionId', protect, getSubmissionReview);
 
 // Admin routes (protected + admin only)
 router.get('/test/:testId', protect, isAdmin, getTestSubmissions);
+router.get('/user/:userId', protect, isAdmin, getUserSubmissions);
 
 export default router;

@@ -17,14 +17,14 @@ import { Skeleton } from "@/components/ui/skeleton"; // For loading state
 
 // Custom Components
 import ImageUpload from "./ImageUpload";
-import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from "./ui/select";
+import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from "@/components/ui/select";
 
 // Your existing state initialization and deep copy helpers remain unchanged
-const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "", image: null };
+const emptyQuestion = { question: "", image: null, additionalText: "", options: ["", "", "", ""], answer: "", explanation: "" };
 const emptyModule = { moduleName: "", timer: 600, questions: [ { ...emptyQuestion } ] };
 const emptySection = { sectionName: "", modules: [ { ...emptyModule } ], breakAfter: { duration: 0 } };
 
-const deepCopyQuestion = (q = emptyQuestion) => ({ question: q.question || "", options: [...(q.options || ["", "", "", ""])], answer: q.answer || "", explanation: q.explanation || "", image: q.image || null });
+const deepCopyQuestion = (q = emptyQuestion) => ({ question: q.question || "", image: q.image || null, additionalText: q.additionalText || "", options: [...(q.options || ["", "", "", ""])], answer: q.answer || "", explanation: q.explanation || "" });
 const deepCopyModule = (m = emptyModule) => ({ moduleName: m.moduleName || "", timer: m.timer || 600, questions: (m.questions || [deepCopyQuestion()]).map(deepCopyQuestion) });
 const deepCopySection = (s = emptySection) => ({ sectionName: s.sectionName || "", modules: (s.modules || [deepCopyModule()]).map(deepCopyModule), breakAfter: { duration: s.breakAfter?.duration || 0 } });
 
@@ -325,6 +325,14 @@ const EditTest = () => {
                                                                         <Label htmlFor={`qtext-${sIdx}-${mIdx}-${qIdx}`}>Question Text</Label>
                                                                         <Textarea id={`qtext-${sIdx}-${mIdx}-${qIdx}`} value={q.question} onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "question", e.target.value)} required />
                                                                     </div>
+                                                                    <div>
+                                                                        <Label>Image (Optional)</Label>
+                                                                        <ImageUpload onImageChange={(url) => handleQuestionChange(sIdx, mIdx, qIdx, "image", url)} currentImage={q.image} />
+                                                                    </div>
+                                                                    <div>
+                                                                        <Label htmlFor={`additionalText-${sIdx}-${mIdx}-${qIdx}`}>Additional Text (Optional)</Label>
+                                                                        <Textarea id={`additionalText-${sIdx}-${mIdx}-${qIdx}`} value={q.additionalText || ""} onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "additionalText", e.target.value)} rows={2} />
+                                                                    </div>
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                         {q.options.map((opt, optIdx) => (
                                                                             <div key={optIdx}>
@@ -357,10 +365,6 @@ const EditTest = () => {
                                                                     <div>
                                                                         <Label htmlFor={`exp-${sIdx}-${mIdx}-${qIdx}`}>Explanation (Optional)</Label>
                                                                         <Textarea id={`exp-${sIdx}-${mIdx}-${qIdx}`} value={q.explanation || ""} onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "explanation", e.target.value)} rows={2} />
-                                                                    </div>
-                                                                    <div>
-                                                                        <Label>Image (Optional)</Label>
-                                                                        <ImageUpload onImageChange={(url) => handleQuestionChange(sIdx, mIdx, qIdx, "image", url)} currentImage={q.image} />
                                                                     </div>
                                                                 </CardContent>
                                                             </Card>

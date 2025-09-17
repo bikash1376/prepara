@@ -1,5 +1,5 @@
 import { Calculator, LogOut, MoreVertical, Save } from "lucide-react";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 

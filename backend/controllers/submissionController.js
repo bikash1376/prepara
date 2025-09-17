@@ -194,9 +194,18 @@ export const getTestSubmissions = async (req, res) => {
 export const getUserSubmissions = async (req, res) => {
   try {
     const { userId } = req.params;
-    const submissions = await Submission.find({ userId })
+    
+    // First, find the user by MongoDB _id to get their clerkId
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Then find submissions using the clerkId
+    const submissions = await Submission.find({ userId: user.clerkId })
       .select('testName score totalQuestions percentage submittedAt timeTaken')
       .sort({ submittedAt: -1 });
+    
     res.json(submissions);
   } catch (error) {
     console.error('Admin get user submissions error:', error);

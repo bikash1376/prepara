@@ -59,7 +59,7 @@ app.use('/api/v1/test', addTest);
 // app.use('/api/v1/student/test', studentTestRoutes);
 app.use('/api/v1/admin', adminTestRoutes);
 app.use("/api/v1/admin", adminRoutes);
-app.use('/api/v1/submission', submissionRoutes);
+app.use('/api/v1/submissions', submissionRoutes);
 
 // File upload routes
 app.use('/api/upload', uploadRoutes);

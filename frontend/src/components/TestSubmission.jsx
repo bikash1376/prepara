@@ -6,7 +6,6 @@ import { useAuth } from "@clerk/clerk-react";
 import { ChevronDown, Loader2, MoreVertical, X } from "lucide-react";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
-import { Separator } from "./ui/separator";
 
 const TestSubmission = () => {
   const { id } = useParams();
@@ -739,6 +738,14 @@ const TestSubmission = () => {
                     }
                   }}
                 />
+              </div>
+            )}
+
+            {q.additionalText && (
+              <div className="mt-4">
+                <p className="font-serif text-lg text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                  <LaTeXRenderer text={q.additionalText} />
+                </p>
               </div>
             )}
           </div>

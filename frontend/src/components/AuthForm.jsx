@@ -105,14 +105,16 @@ const AuthForm = ({ mode = "login" }) => {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       {mode === "signup" ? (
-        <SignUp 
-          routing="path" 
-          path="/signup"
-          signInUrl="/login"
-          afterSignUpUrl="/"
-          fallbackRedirectUrl="/"
-        />
+   <SignUp
+   routing="path"
+   path="/signup"
+   signInUrl="/login"
+   afterSignUpUrl="/"
+   fallbackRedirectUrl="/"
+ />
+ 
       ) : (
+        <>
         <SignIn 
           routing="path" 
           path="/login"
@@ -120,6 +122,7 @@ const AuthForm = ({ mode = "login" }) => {
           afterSignInUrl="/"
           fallbackRedirectUrl="/"
         />
+        </>
       )}
     </div>
   );

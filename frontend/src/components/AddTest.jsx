@@ -51,11 +51,11 @@ const LaTeXPreview = ({ text }) => {
 };
 
 // State initialization and deep copy helpers
-const emptyQuestion = { question: "", options: ["", "", "", ""], answer: "", explanation: "", image: null };
+const emptyQuestion = { question: "", image: null, additionalText: "", options: ["", "", "", ""], answer: "", explanation: "" };
 const emptyModule = { moduleName: "", timer: 600, questions: [{ ...emptyQuestion }] };
 const emptySection = { sectionName: "", modules: [{ ...emptyModule }], breakAfter: { duration: 0 } };
 
-const deepCopyQuestion = (q = emptyQuestion) => ({ question: q.question || "", options: [...(q.options || ["", "", "", ""])], answer: q.answer || "", explanation: q.explanation || "", image: q.image || null });
+const deepCopyQuestion = (q = emptyQuestion) => ({ question: q.question || "", image: q.image || null, additionalText: q.additionalText || "", options: [...(q.options || ["", "", "", ""])], answer: q.answer || "", explanation: q.explanation || "" });
 const deepCopyModule = (m = emptyModule) => ({ moduleName: m.moduleName || "", timer: m.timer || 600, questions: (m.questions || [deepCopyQuestion()]).map(deepCopyQuestion) });
 const deepCopySection = (s = emptySection) => ({ sectionName: s.sectionName || "", modules: (s.modules || [deepCopyModule()]).map(deepCopyModule), breakAfter: { duration: s.breakAfter?.duration || 0 } });
 
@@ -328,6 +328,25 @@ const AddTest = () => {
                                           </div>
                                         )}
                                       </div>
+                                      <div>
+                                        <Label className="mb-2">Image (Optional)</Label>
+                                        <ImageUpload onImageChange={(url) => handleQuestionChange(sIdx, mIdx, qIdx, "image", url)} currentImage={q.image} />
+                                      </div>
+                                      <div>
+                                        <Label htmlFor={`additionalText-${sIdx}-${mIdx}-${qIdx}`} className="mb-2">Additional Text (Optional)</Label>
+                                        <Textarea
+                                          id={`additionalText-${sIdx}-${mIdx}-${qIdx}`}
+                                          value={q.additionalText}
+                                          onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "additionalText", e.target.value)}
+                                          placeholder="Enter additional text after image. Use $...$ for inline math or $$...$$ for block math"
+                                        />
+                                        {q.additionalText && (
+                                          <div className="mt-2 bg-black">
+                                            <Label className="text-sm text-gray-600">Preview:</Label>
+                                            <LaTeXPreview className="dark:text-white bg-black" text={q.additionalText} />
+                                          </div>
+                                        )}
+                                      </div>
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {q.options.map((opt, optIdx) => (
                                           <div key={optIdx}>
@@ -370,10 +389,21 @@ const AddTest = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <div>
-                                      <Label className="mb-2">Image (Optional)</Label>
-                                      <ImageUpload onImageChange={(url) => handleQuestionChange(sIdx, mIdx, qIdx, "image", url)} currentImage={q.image} />
-                                    </div>
+                                      <div>
+                                        <Label htmlFor={`explanation-${sIdx}-${mIdx}-${qIdx}`} className="mb-2">Explanation (Optional)</Label>
+                                        <Textarea
+                                          id={`explanation-${sIdx}-${mIdx}-${qIdx}`}
+                                          value={q.explanation}
+                                          onChange={e => handleQuestionChange(sIdx, mIdx, qIdx, "explanation", e.target.value)}
+                                          placeholder="Enter explanation. Use $...$ for inline math or $$...$$ for block math"
+                                        />
+                                        {q.explanation && (
+                                          <div className="mt-2">
+                                            <Label className="text-sm text-gray-600">Preview:</Label>
+                                            <LaTeXPreview text={q.explanation} />
+                                          </div>
+                                        )}
+                                      </div>
                                   </CardContent>
                                                             </Card>
                                                         ))}

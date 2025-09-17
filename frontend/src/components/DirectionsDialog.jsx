@@ -5,7 +5,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-  } from "./ui/dialog";
+  } from "@/components/ui/dialog";
   
   const DirectionsDialog = ({ open, onOpenChange }) => {
     return (

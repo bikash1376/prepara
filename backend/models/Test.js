@@ -2,13 +2,17 @@ import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
     question: { type: String, required: true },
-    options: [{ type: String, required: true }],
-    answer: { type: String, required: true },
-    explanation: { type: String, default: '' },
     image: { 
         type: String, 
-        default: null // UploadThing URL for the question image
-    }
+        default: null // Cloudinary URL for the question image
+    },
+    additionalText: { 
+        type: String, 
+        default: '' // Optional text question after image
+    },
+    options: [{ type: String, required: true }],
+    answer: { type: String, required: true },
+    explanation: { type: String, default: '' }
 });
 
 const moduleSchema = new mongoose.Schema({

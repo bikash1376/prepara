@@ -103,10 +103,13 @@ const StudentMgmt = () => {
       setLoadingSubmissions(true);
       try {
         const token = await getToken();
-        const res = await fetch(`http://localhost:5000/api/v1/admin/submissions/${userId}`, {
+        console.log("Fetching submissions for userId:", userId);
+        const res = await fetch(`http://localhost:5000/api/v1/submissions/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Response status:", res.status);
         const data = await res.json();
+        console.log("Response data:", data);
         setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
       } catch (error) {
         console.error("Error fetching submissions:", error);

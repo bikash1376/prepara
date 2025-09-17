@@ -116,6 +116,13 @@ NOtes
 ⚠️include : formula booklet
 ⚠️remove hardcode values [multiple pages --reproduce]
 ⚠️submission history and scores
+⚠️Use 10xlearningacademy.com styled components (button, logo, hover color, accordion, border radius, images)
+⚠️ Increase logo size ✅demo done
+⚠️ Option to give tests separately - english and math
+⚠️ Landing page for the exam (with login/signup button) ✅demo done
+⚠️ Copy bluebook front dashboard
+⚠️ Colors are too bland ⏲️fixing
+
 
 ![alt text](image-1.png)
 ![alt text](image-2.png)

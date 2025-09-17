@@ -24,22 +24,21 @@ import AdminSubmissions from "./components/AdminSubmissions";
 import AdminTestPreview from "./components/AdminTestPreview";
 import Tests from "./components/Tests";
 import AdminAiChat from "./components/AdminAiChat";
+import LandingPage from "./components/LandingPage";
 
-// Protected home page with Clerk authentication
+
+
+// Home page component that handles authentication-based routing
 const HomePage = () => {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isSignedIn) {
-      navigate("/login");
-      return;
-    }
+    if (!isLoaded) return; // Wait for Clerk to load
 
-    if (user) {
+    if (isSignedIn && user) {
       const role = user.publicMetadata?.role;
       if (!role) {
-        // User needs to select a role
         navigate("/login");
         return;
       }
@@ -51,61 +50,27 @@ const HomePage = () => {
         navigate("/student/dashboard");
       }
     }
-  }, [isSignedIn, user, navigate]);
+    // If not signed in, stay on landing page (no redirect needed)
+  }, [isSignedIn, user, isLoaded, navigate]);
 
-  if (!isSignedIn || !user) {
+  // Show loading while Clerk is initializing
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please sign in to continue</h1>
-          <Link
-            to="/login"
-            className="px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Sign In
-          </Link>
+          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
         </div>
       </div>
     );
   }
 
-  const role = user.publicMetadata?.role;
-
-  return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold mb-4">
-        {/* Welcome {user.firstName || user.emailAddresses[0]?.emailAddress}! */}
-      </h1>
-
-      {/* Show Admin Dashboard link only if user is admin */}
-      {/* {role === "admin" && (
-        <Link
-          to="/admin/dashboard"
-          className="mb-2 px-4 py-2 bg-purple-600 text-white rounded"
-        >
-          Admin Dashboard
-        </Link>
-      )} */}
-
-      {/* Show Student Dashboard link only if user is student */}
-      {/* {role === "student" && (
-        <>
-          <Link
-            to="/student/dashboard"
-            className="mb-2 px-4 py-2 bg-green-600 text-white rounded"
-          >
-            Student Dashboard
-          </Link>
-        </>
-      )} */}
-    </div>
-  );
+  // Show landing page for unauthenticated users
+  return <LandingPage />;
 };
-
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname.startsWith('/test-submission/');
+  const hideNavbar = location.pathname.startsWith('/test-submission/') || location.pathname === '/';
 
   return (
     <>
@@ -236,12 +201,10 @@ const AppContent = () => {
           } 
         />
 
-        {/* Public Auth Routes */}
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login/*" element={<AuthForm mode="login" />} />
         <Route path="/signup/*" element={<AuthForm mode="signup" />} />
-
-        {/* Default */}
-        <Route path="/" element={<HomePage />} />
       </Routes>
     </>
   );
