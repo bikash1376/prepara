@@ -1,4 +1,4 @@
-import { Calculator, LogOut, MoreVertical, Save } from "lucide-react";
+import { Calculator, LogOut, MoreVertical, Save, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,31 +17,33 @@ const ExamNavbar = ({
   currentSection = 0
 }) => {
   return (
-    <div className="z-50 flex items-center justify-between w-full px-6 py-2 bg-white dark:bg-neutral-950 pb-8 mb-8 border-b-2 border-gray-600">
-      {/* // <div className="w-full fixed top-0 left-0 z-50 flex items-center justify-between px-6 py-2 bg-white dark:bg-neutral-950 border-b-2 border-gray-600"> */}
-      
+    <div className="z-50 flex items-center justify-between w-full px-6 py-3 bg-blue-50 dark:bg-black border-b-[.2px] border-black divide-dotted dark:border-gray-900 h-24">
       {/* Left: Test Info */}
-      <div className="flex flex-col text-gray-800 dark:text-gray-200 font-medium">
-        <span className="text-lg">{`Section ${section.sectionName}`}</span>
-        <span className="text-lg">Module {module.moduleName}</span>
+      <div className="flex flex-col justify-start items-start gap-2">
+        <div className="text-gray-800 dark:text-gray-200 font-medium">
+          <span className="text-lg">{`${section.sectionName}` }: {module.moduleName}</span>
+        </div>
         <button
           onClick={() => setIsDirectionsOpen(true)}
-          className="text-sm text-blue-600 hover:underline text-left"
+          className="text-sm text-blue-600 hover:underline"
         >
           Directions
         </button>
       </div>
 
       {/* Center: Timer */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col justify-center items-center gap-2">
+        {!showTimer && (
+          <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        )}
         {showTimer && (
-          <p className={`text-3xl mb-2 font-semibold ${timer < 300 ? "text-red-600" : "text-green-600 dark:text-green-400"}`}>
+          <p className={`text-2xl font-semibold ${timer < 300 ? "text-red-600" : "text-green-600 dark:text-green-400"}`}>
             {formatTime(timer)}
           </p>
         )}
         <Badge
           variant="secondary"
-          className="cursor-pointer mt-1"
+          className="cursor-pointer"
           onClick={() => setShowTimer(!showTimer)}
         >
           {showTimer ? "Hide" : "Show"}
@@ -49,7 +51,7 @@ const ExamNavbar = ({
       </div>
 
       {/* Right: Tools & Menu */}
-      <div className="flex items-center gap-2"> {/* New container for right-side elements */}
+      <div className="flex flex-col justify-end items-end gap-2">
         
         {/* Calculator Buttons - Hidden in first section (section 0) */}
         {currentSection > 0 && (

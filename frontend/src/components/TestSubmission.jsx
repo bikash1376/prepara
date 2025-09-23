@@ -2,15 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import { useAuth } from "@clerk/clerk-react";
-import { ChevronDown, Loader2, MoreVertical, X } from "lucide-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { ChevronDown, Loader2, MoreVertical, X, Flag, ArrowRight, ArrowUp } from "lucide-react";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
+import { IoIosArrowUp } from "react-icons/io";
 
 const TestSubmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken } = useAuth();
+  const { user } = useUser();
 
   const [test, setTest] = useState(null);
   const [currentSection, setCurrentSection] = useState(0);
@@ -657,20 +659,23 @@ const TestSubmission = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto mt-1 p-6">
-      <ExamNavbar
-        section={section}
-        module={module}
-        timer={timer}
-        formatTime={formatTime}
-        showTimer={showTimer}
-        setShowTimer={setShowTimer}
-        setIsDirectionsOpen={setIsDirectionsOpen}
-        setShowDesmos={setShowDesmos}
-        setShowScientific={setShowScientific}
-        navigate={navigate}
-        currentSection={currentSection}
-      />
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Fixed Navbar */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-blue-50 dark:bg-black shadow-sm">
+        <ExamNavbar
+          section={section}
+          module={module}
+          timer={timer}
+          formatTime={formatTime}
+          showTimer={showTimer}
+          setShowTimer={setShowTimer}
+          setIsDirectionsOpen={setIsDirectionsOpen}
+          setShowDesmos={setShowDesmos}
+          setShowScientific={setShowScientific}
+          navigate={navigate}
+          currentSection={currentSection}
+        />
+      </div>
 
       <DirectionsDialog
         open={isDirectionsOpen}
@@ -687,209 +692,237 @@ const TestSubmission = () => {
         onOpenChange={setIsSubmitConfirmOpen}
       />
 
-      {/* Question Navigation Panel */}
-      <div className="flex justify-end items-center gap-4 mb-6">
-        <button
-          onClick={() => toggleQuestionForReview(currentQuestion)}
-          className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-            getReviewedQuestions().has(currentQuestion)
-              ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-          }`}
-        >
-          {getReviewedQuestions().has(currentQuestion) ? "Remove from Review" : "Mark for Review"}
-        </button>
-        
-        <div className="flex justify-end items-center gap-4">
-          <button
+      {/* Main Content Area with top and bottom padding for fixed elements */}
+      <div className="pt-20 pb-20 px-6">
+        {/* Question Navigation Panel */}
+        <div className="flex justify-end items-center gap-4 mb-6">
+          {/* <button
             onClick={() => setIsQuestionSwitchOpen(true)}
             className="px-4 py-2 rounded text-sm font-medium transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-between"
           >
             Question {currentQuestion + 1} of {module.questions.length}
             <ChevronDown className="ml-2 w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex gap-6 mb-6 ">
-        {/* Question Panel - Left Side */}
-        <div className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
-          showDesmos || showScientific ? "w-1/4" : "w-1/2"
-        }`}>
-          <div className="mb-4">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Question {currentQuestion + 1} of {module.questions.length}
-            </span>
-
-            <h2 className="font-serif text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
-              <LaTeXRenderer text={q.question} />
-            </h2>
-            
-            {q.image && (
-              <div className="mt-4">
-                <img 
-                  src={q.image} 
-                  alt={`Question ${currentQuestion + 1} image`}
-                  className="max-w-full h-auto max-h-96 rounded border shadow-sm object-contain"
-                  onError={(e) => {
-                    // Fallback to original URL if Cloudinary transformation fails
-                    if (e.target.src !== q.image) {
-                      e.target.src = q.image;
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            {q.additionalText && (
-              <div className="mt-4">
-                <p className="font-serif text-lg text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                  <LaTeXRenderer text={q.additionalText} />
-                </p>
-              </div>
-            )}
-          </div>
+          </button> */}
         </div>
 
-        {/* Options Panel - Right Side */}
-        <div className={`bg-white dark:bg-neutral-950 rounded-lg shadow-md p-6 transition-all duration-300 ${
-          showDesmos || showScientific ? "w-1/4" : "w-1/2"
-        }`}>
-          <div className="mb-4">
-            <span className="font-medium text-gray-800 dark:text-gray-200">
-              Which choice completes the text with the most logical and precise word or phrase?
-            </span>
-          </div>
+        {/* Main Content Layout */}
+        <div className="flex gap-6 mb-6">
+          {/* Question Panel - Left Side */}
+          <div className={`bg-white dark:bg-neutral-950 rounded-lg p-6 transition-all duration-300 ${
+            showDesmos || showScientific ? "w-1/4" : "w-1/2"
+          }`}>
+            <div className="mb-4">
+              {/* <span className="text-sm text-gray-500 dark:text-gray-400">
+                Question {currentQuestion + 1} of {module.questions.length}
+              </span> */}
 
-          <div className="space-y-3">
-            {q.options.map((option, optionIndex) => (
-              <div key={optionIndex} className="flex items-center gap-3">
-                <label
-                  className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-full ${
-                    answersArr[currentQuestion] === option
-                      ? "border-black border-2 dark:border-white bg-black-50 dark:bg-neutral-900"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  } ${
-                    getStruckOutOptions().has(optionIndex) 
-                      ? 'relative after:content-[""] after:absolute after:top-1/2 after:left-0 after:right-0 after:h-0.5 after:bg-red-500 after:transform after:-translate-y-1/2 opacity-50' 
-                      : ''
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`question-${currentQuestion}`}
-                    value={option}
-                    checked={answersArr[currentQuestion] === option}
-                    onChange={() => handleAnswerChange(currentQuestion, option)}
-                    className="mr-3"
+              <h2 className="font-serif text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
+                <LaTeXRenderer text={q.question} />
+              </h2>
+              
+              {q.image && (
+                <div className="mt-4">
+                  <img 
+                    src={q.image} 
+                    alt={`Question ${currentQuestion + 1} image`}
+                    className="max-w-full h-auto max-h-96 rounded border shadow-sm object-contain"
+                    onError={(e) => {
+                      // Fallback to original URL if Cloudinary transformation fails
+                      if (e.target.src !== q.image) {
+                        e.target.src = q.image;
+                      }
+                    }}
                   />
+                </div>
+              )}
 
-                  <span className="font-semibold mr-2 text-gray-700 dark:text-gray-300">
-                    {String.fromCharCode(65 + optionIndex)}.
-                  </span>
+              {q.additionalText && (
+                <div className="mt-4">
+                  <p className="font-serif text-lg text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                    <LaTeXRenderer text={q.additionalText} />
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
-                  <span className="text-gray-700 dark:text-gray-300">
-                    <LaTeXRenderer text={option} />
-                  </span>
-                </label>
-                
+          {/* Options Panel - Right Side */}
+          <div className={`bg-white dark:bg-neutral-950 rounded-lg p-6 transition-all duration-300 ${
+            showDesmos || showScientific ? "w-1/4" : "w-1/2"
+          }`}>
+            {/* Question number and Mark for Review */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  {currentQuestion + 1}
+                </span>
                 <button
-                  onClick={() => toggleStrikeThrough(currentQuestion, optionIndex)}
-                  className={`p-2 rounded-full transition-colors ${
-                    getStruckOutOptions().has(optionIndex)
-                      ? "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  onClick={() => toggleQuestionForReview(currentQuestion)}
+                  className={`flex items-center gap-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    getReviewedQuestions().has(currentQuestion)
+                      ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
                   }`}
-                  title={getStruckOutOptions().has(optionIndex) ? "Remove strike-through" : "Strike through option"}
                 >
-                  <X className="w-4 h-4" />
+                  <Flag className="w-4 h-4" />
+                  Mark for Review
                 </button>
               </div>
-            ))}
+            </div>
+            
+            <div className="mb-4">
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                Which choice completes the text with the most logical and precise word or phrase?
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {q.options.map((option, optionIndex) => (
+                <div key={optionIndex} className="flex items-center gap-3">
+                  <label
+                    className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors w-full ${
+                      answersArr[currentQuestion] === option
+                        ? "border-black border-2 dark:border-white bg-black-50 dark:bg-neutral-900"
+                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    } ${
+                      getStruckOutOptions().has(optionIndex) 
+                        ? 'relative after:content-[""] after:absolute after:top-1/2 after:left-0 after:right-0 after:h-0.5 after:bg-red-500 after:transform after:-translate-y-1/2 opacity-50' 
+                        : ''
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${currentQuestion}`}
+                      value={option}
+                      checked={answersArr[currentQuestion] === option}
+                      onChange={() => handleAnswerChange(currentQuestion, option)}
+                      className="mr-3"
+                    />
+
+                    <span className="font-semibold mr-2 text-gray-700 dark:text-gray-300">
+                      {String.fromCharCode(65 + optionIndex)}.
+                    </span>
+
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <LaTeXRenderer text={option} />
+                    </span>
+                  </label>
+                  
+                  <button
+                    onClick={() => toggleStrikeThrough(currentQuestion, optionIndex)}
+                    className={`p-2 rounded-full transition-colors ${
+                      getStruckOutOptions().has(optionIndex)
+                        ? "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    }`}
+                    title={getStruckOutOptions().has(optionIndex) ? "Remove strike-through" : "Strike through option"}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {(showDesmos || showScientific) && (
+            <div className="w-1/2 bg-white dark:bg-neutral-950 rounded-lg p-4">
+              {showDesmos && (
+                <div className="h-full">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Desmos Calculator
+                    </h3>
+                    <button
+                      onClick={() => setShowDesmos(false)}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div
+                    ref={desmosRef}
+                    className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    style={{ minHeight: "384px" }}
+                  ></div>
+                </div>
+              )}
+
+              {showScientific && (
+                <div className="h-full">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Scientific Calculator
+                    </h3>
+                    <button
+                      onClick={() => setShowScientific(false)}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div
+                    ref={scientificRef}
+                    className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    style={{ minHeight: "384px" }}
+                  ></div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-
-        {(showDesmos || showScientific) && (
-          <div className="w-1/2 bg-white dark:bg-neutral-950 rounded-lg shadow-md p-4">
-            {showDesmos && (
-              <div className="h-full">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Desmos Calculator
-                  </h3>
-                  <button
-                    onClick={() => setShowDesmos(false)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div
-                  ref={desmosRef}
-                  className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
-                  style={{ minHeight: "384px" }}
-                ></div>
-              </div>
-            )}
-
-            {showScientific && (
-              <div className="h-full">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Scientific Calculator
-                  </h3>
-                  <button
-                    onClick={() => setShowScientific(false)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div
-                  ref={scientificRef}
-                  className="w-full h-96 border border-gray-200 dark:border-gray-600 rounded-lg"
-                  style={{ minHeight: "384px" }}
-                ></div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="bg-white dark:bg-neutral-950 rounded-lg p-6">
-        <div className="flex justify-between items-center">
-          {currentQuestion > 0 && (
-            <button
-              onClick={() => setCurrentQuestion(currentQuestion - 1)}
-              className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-            >
-              ← Previous
-            </button>
-          )}
+      {/* Fixed Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-blue-50 dark:bg-black border-t-[.2px] border-black dark:border-gray-700 shadow-lg">
+        <div className="flex justify-between items-center px-6 py-4">
+          {/* Left side - User name */}
+          <div className="text-gray-700 dark:text-gray-300 font-medium">
+            {user?.fullName || user?.firstName || 'Student'}
+          </div>
 
-          {currentQuestion === 0 && <div></div>}
+          {/* Center - Question indicator (clickable) */}
+          <button
+            onClick={() => setIsQuestionSwitchOpen(true)}
+            className="px-4 py-2 text-gray-100 dark:text-gray-300 font-medium hover:text-white dark:hover:text-white transition-colors cursor-pointer bg-black flex items-center"
+          >
+            Question {currentQuestion + 1} of {module.questions.length}
+           
+            <IoIosArrowUp className="w-4 h-4 ml-2" />
+          </button>
 
-          {currentQuestion < module.questions.length - 1 ? (
-            <button
-              onClick={() => setCurrentQuestion(currentQuestion + 1)}
-              className="px-6 py-2 bg-black dark:bg-gray-900 text-white rounded hover:bg-gray-800 dark:hover:bg-gray-700"
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsSubmitConfirmOpen(true)}
-              disabled={submitting}
-              className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              {currentModule === section.modules.length - 1 &&
-              currentSection === test.sections.length - 1
-                ? "Submit Test"
-                : "Submit Module"}
-            </button>
-          )}
+          {/* Right side - Navigation buttons */}
+          <div className="flex items-center gap-4">
+            {currentQuestion > 0 && (
+              <button
+                onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
+              >
+                Back
+              </button>
+            )}
+
+            {currentQuestion < module.questions.length - 1 ? (
+              <button
+                onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 font-medium"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsSubmitConfirmOpen(true)}
+                disabled={submitting}
+                className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 font-medium"
+              >
+                {currentModule === section.modules.length - 1 &&
+                currentSection === test.sections.length - 1
+                  ? "Submit Test"
+                  : "Submit Module"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

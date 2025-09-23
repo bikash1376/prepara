@@ -49,7 +49,8 @@ export const protect = async (req, res, next) => {
         {
           clerkId: userId,
           email: clerkUser.emailAddresses[0]?.emailAddress,
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+          username: clerkUser.username,
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
           role: role
         },
         { upsert: true, new: true }
@@ -59,7 +60,8 @@ export const protect = async (req, res, next) => {
       req.user = {
         id: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+        username: clerkUser.username,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       };
       

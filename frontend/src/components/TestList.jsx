@@ -1,14 +1,173 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/clerk-react";
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { FileTextIcon } from "@radix-ui/react-icons";
-import { FiBookOpen, FiRefreshCw, FiCheckSquare, FiClock, FiAlertCircle } from "react-icons/fi";
-import { Loader2 } from "lucide-react";
+import { FiRefreshCw, FiClock, FiAlertCircle, FiExternalLink, FiInfo, FiCheckCircle, FiFileText } from "react-icons/fi";
+import { Loader2, Clock, Calendar, BookOpen, Award, BarChart2, CheckCircle } from "lucide-react";
+
+
+// const poppins = Poppins_Regular;
+
+
+
+const TestCard = ({ test, onTakeTest }) => (
+  <div className="group border rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 bg-[#F1F0FE] dark:bg-gray-800  max-w-sm h-[250px] ">
+    <div className="p-6 h-full flex flex-col">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
+            <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{test.testname}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Full-length practice test</p>
+          </div>
+        </div>
+        {/* <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+          Available
+        </span> */}
+      </div>
+
+      <div className="flex-1"></div>
+
+      <div className="flex justify-end space-x-3">
+        {/* <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center">
+              <FiInfo className="w-4 h-4 mr-1" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">{test.testname}</DialogTitle>
+              <DialogDescription>Test details and instructions</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <FiClock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Time Limit</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {test.duration || 180} minutes to complete the test.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <Award className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Scoring</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Your score will be available immediately after submission.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <FiInfo className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Instructions</h4>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mt-1">
+                    <li>Ensure you have a stable internet connection</li>
+                    <li>Use the full-screen mode for best experience</li>
+                    <li>Answers are saved automatically</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={() => onTakeTest(test._id)} className="bg-[#7A6AD8] hover:bg-[#6B5BC7] rounded-lg">
+                Start Test
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog> */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              className="text-white rounded-full px-6 py-5 "
+            >
+              Start Test
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">{test.testname}</DialogTitle>
+              <DialogDescription>Ready to begin your test?</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <FiClock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Test Duration</h4>
+                  <p className="text-sm text-muted-foreground">
+                    This test will take approximately {test.duration || 180} minutes to complete.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Questions</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {test.questions?.length || 0} questions covering various topics.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
+                  <Award className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Scoring</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Your performance will be evaluated and scored immediately.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={() => onTakeTest(test._id)} className="bg-[#7A6AD8] hover:bg-[#6B5BC7] rounded-lg">
+                Start Test
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  </div>
+);
+
+// Stats Card Component
+const StatCard = ({ icon: Icon, title, value, description }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+    <div className="flex items-center">
+      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="ml-4">
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+      </div>
+    </div>
+  </div>
+);
 
 const GuideSVG = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -24,7 +183,7 @@ const TestList = () => {
   const { user, isLoaded: userLoaded } = useUser();
   const navigate = useNavigate();
 
-  const userName = user?.firstName || "Student";
+  const userName = user?.firstName || user?.username || "Student";
   const lastScore = "85/100"; // Hardcoded for demonstration
 
   const fetchTestsWithStatus = useCallback(async (showLoading = true) => {
@@ -79,151 +238,196 @@ const TestList = () => {
   // const completedTests = tests.filter(test => test.isCompleted);
 
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-2">Welcome, {userName}!</h1>
-      <p className="text-muted-foreground text-lg mb-6">Last Test Score: {lastScore}</p>
-      
-      <div className="mb-8">
-        <Card className="flex flex-col text-center w-full max-w-sm mx-auto md:mx-0">
-          <CardHeader className="flex flex-col items-center">
-            <GuideSVG className="w-12 h-12 text-blue-500 mb-2" />
-            <CardTitle className="text-lg font-semibold">Test Taking Guide</CardTitle>
-            <CardDescription>Tips and tricks to help you prepare.</CardDescription>
-          </CardHeader>
-          <CardFooter className="mt-auto flex justify-center">
-            <Dialog>
-              <DialogTrigger asChild><Button>Read Guide</Button></DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Test Taking Guide</DialogTitle>
-                  <DialogDescription>Essential steps for a successful test experience.</DialogDescription>
-                </DialogHeader>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-left py-4 space-y-4">
-                  <div>
-                    <h3 className="font-semibold">1. Preparation</h3>
-                    <p>Ensure you are in a quiet environment. Check your internet connection and close any unnecessary applications.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">2. Time Management</h3>
-                    <p>Keep an eye on the clock. Allocate a specific amount of time for each question. If you're stuck, move on and come back later.</p>
-                  </div>
-                   <div>
-                    <h3 className="font-semibold">3. Read Carefully</h3>
-                    <p>Read each question and all options thoroughly before selecting your answer. Misreading a single word can change the meaning.</p>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <Separator className="my-8" />
-      
-      {/* --- Available Tests Section --- */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Available Tests</h2>
-        <Button onClick={() => fetchTestsWithStatus(true)} variant="outline" size="sm" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FiRefreshCw className="w-4 h-4 mr-2" />}
-            Refresh
-        </Button>
-      </div>
-
-      {error && (
-        <Card className="text-center py-8 mb-6 border-destructive bg-destructive/10">
-          <CardContent className="flex flex-col items-center gap-4">
-            <FiAlertCircle className="w-10 h-10 text-destructive" />
-            <div>
-              <p className="font-medium text-destructive">Failed to load tests</p>
-              <p className="text-sm mt-1">{error}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!error && availableTests.length === 0 && (
-        <Card className="text-center py-10">
-          <CardContent>
-            <p className="text-muted-foreground">No new tests are available at the moment.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!error && availableTests.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableTests.map(test => (
-            <Card key={test._id} className="flex flex-col">
-              <CardHeader>
-                <FileTextIcon className="w-8 h-8 text-primary mb-2" />
-                <CardTitle>{test.testname}</CardTitle>
-                <CardDescription>Click below to begin the test.</CardDescription>
-              </CardHeader>
-              <CardFooter className="mt-auto">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="w-full">Take Test</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>{test.testname}</DialogTitle>
-                      <DialogDescription>Review the instructions before you begin.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="flex items-start space-x-3">
-                        <FiClock className="h-5 w-5 mt-1 flex-shrink-0 text-primary" />
-                        <div>
-                          <h4 className="font-semibold">Time Limit</h4>
-                          <p className="text-sm text-muted-foreground">This is a timed test. Ensure you complete it in one sitting.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <FiCheckSquare className="h-5 w-5 mt-1 flex-shrink-0 text-primary" />
-                        <div>
-                          <h4 className="font-semibold">Submission</h4>
-                          <p className="text-sm text-muted-foreground">Answers are submitted automatically when the time is up or when you finish.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                      <Button onClick={() => handleTakeTest(test._id)}>Start Test</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardFooter>
-            </Card>
-          ))}
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-950`} style={{ fontFamily: 'Poppins, sans-serif' }}>
+      {/* Hero Section */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+              Welcome back, {userName}!
+            </h1>
+            <p className="mt-3 text-xl text-gray-500 dark:text-gray-400">
+              Prepare for success with our SAT practice tests
+            </p>
+          </div>
+          
+          {/* Stats Grid */}
+          {/* <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard 
+              icon={BookOpen} 
+              title="Available Tests" 
+              value={availableTests.length} 
+            />
+            <StatCard 
+              icon={Award} 
+              title="Highest Score" 
+              value={lastScore} 
+            />
+            <StatCard 
+              icon={BarChart2} 
+              title="Average Score" 
+              value="--/--" 
+            />
+            <StatCard 
+              icon={Clock} 
+              title="Time Spent" 
+              value="0h 0m" 
+            />
+          </div> */}
         </div>
-      )}
+      </div>
 
-      {/* --- Completed Tests Section --- */}
-      {/* {completedTests.length > 0 && (
-        <>
-            <Separator className="my-12" />
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold">Completed Tests</h2>
-                <p className="text-muted-foreground">Tests you have already taken.</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="md:flex md:items-center md:justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Practice Tests</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Select a test to begin your practice session
+            </p>
+          </div>
+          <div className="mt-4 flex-shrink-0 md:mt-0 md:ml-4">
+            <Button 
+              onClick={() => fetchTestsWithStatus(true)} 
+              variant="outline" 
+              size="sm" 
+              disabled={loading}
+              className="inline-flex items-center"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <FiRefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <FiAlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error loading tests</h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                  <p>{error}</p>
+                </div>
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => fetchTestsWithStatus(true)}
+                    className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-200 dark:hover:bg-red-900/30"
+                  >
+                    <FiRefreshCw className="w-4 h-4 mr-2" />
+                    Try again
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {completedTests.map(test => (
-                    <Card key={test._id} className="flex flex-col bg-muted/50">
-                        <CardHeader>
-                            <FileTextIcon className="w-8 h-8 text-muted-foreground mb-2" />
-                            <CardTitle className="text-muted-foreground">{test.testname}</CardTitle>
-                            <CardDescription>You have already completed this test.</CardDescription>
-                        </CardHeader>
-                        <CardFooter className="mt-auto">
-                            <Button disabled className="w-full">
-                                <FiBookOpen className="mr-2 h-4 w-4" />
-                                Completed
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!error && availableTests.length === 0 && (
+          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <FiFileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No tests available</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              There are no tests available at the moment. Please check back later.
+            </p>
+            <div className="mt-6">
+              <Button 
+                onClick={() => fetchTestsWithStatus(true)}
+                variant="outline"
+                className="inline-flex items-center"
+              >
+                <FiRefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
             </div>
-        </>
-      )} */}
+          </div>
+        )}
+
+        {/* Tests Grid */}
+        {!error && availableTests.length > 0 && (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {availableTests.map(test => (
+              <TestCard 
+                key={test._id} 
+                test={test} 
+                onTakeTest={handleTakeTest} 
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Test Taking Tips */}
+        <div className="mt-12 bg-blue-50 dark:bg-blue-900/10 rounded-xl p-6">
+          <div className="md:flex md:items-center md:justify-between">
+            <div className="md:w-2/3">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Test Taking Tips</h3>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Maximize your score with these essential test-taking strategies and time management tips.
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    View Tips
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">Test Taking Guide</DialogTitle>
+                    <DialogDescription>Essential strategies for success</DialogDescription>
+                  </DialogHeader>
+                  <div className="prose prose-sm dark:prose-invert max-w-none py-4 space-y-6">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">1. Time Management</h3>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Allocate time for each section and stick to it</li>
+                        <li>Don't spend too much time on any single question</li>
+                        <li>Answer easier questions first, then return to harder ones</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">2. Reading Passages</h3>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Skim the questions first to know what to look for</li>
+                        <li>Underline key points as you read</li>
+                        <li>Eliminate obviously wrong answers first</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">3. Math Section</h3>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Show your work for every problem</li>
+                        <li>Check your calculations</li>
+                        <li>Use the calculator strategically</li>
+                      </ul>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
   );
 };
 

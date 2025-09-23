@@ -58,7 +58,8 @@ export const getUserProfile = async (req, res) => {
       { 
         clerkId: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: clerkUser.firstName + ' ' + clerkUser.lastName,
+        username: clerkUser.username,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       },
       { upsert: true, new: true }
@@ -68,7 +69,8 @@ export const getUserProfile = async (req, res) => {
       user: {
         id: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: clerkUser.firstName + ' ' + clerkUser.lastName,
+        username: clerkUser.username,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       }
     });
@@ -93,7 +95,8 @@ export const syncUser = async (req, res) => {
         {
           clerkId: id,
           email: email_addresses[0]?.email_address,
-          name: `${first_name || ''} ${last_name || ''}`.trim(),
+          username: data.username,
+          name: `${first_name || ''} ${last_name || ''}`.trim() || data.username,
           role: role
         },
         { upsert: true, new: true }

@@ -1,0 +1,52 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#F8FAFC"/>
+
+  <!-- Main illustration container -->
+  <g transform="translate(200, 150)">
+    <!-- Central book icon -->
+    <g transform="translate(0, -20)">
+      <rect x="-40" y="-30" width="80" height="60" rx="8" fill="#7A6AD8" opacity="0.1"/>
+      <rect x="-35" y="-25" width="70" height="50" rx="4" fill="#7A6AD8" opacity="0.2"/>
+      <rect x="-30" y="-20" width="60" height="40" rx="2" fill="#7A6AD8"/>
+
+      <!-- Book pages -->
+      <line x1="-20" y1="-15" x2="-20" y2="15" stroke="white" stroke-width="1" opacity="0.3"/>
+      <line x1="-10" y1="-15" x2="-10" y2="15" stroke="white" stroke-width="1" opacity="0.3"/>
+      <line x1="0" y1="-15" x2="0" y2="15" stroke="white" stroke-width="1" opacity="0.3"/>
+      <line x1="10" y1="-15" x2="10" y2="15" stroke="white" stroke-width="1" opacity="0.3"/>
+
+      <!-- Book title -->
+      <text x="0" y="-5" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">SAT</text>
+      <text x="0" y="3" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="white" opacity="0.8">Practice</text>
+    </g>
+
+    <!-- Decorative elements -->
+    <circle cx="-60" cy="-40" r="3" fill="#7A6AD8" opacity="0.4"/>
+    <circle cx="60" cy="-40" r="3" fill="#7A6AD8" opacity="0.4"/>
+    <circle cx="-60" cy="40" r="3" fill="#7A6AD8" opacity="0.4"/>
+    <circle cx="60" cy="40" r="3" fill="#7A6AD8" opacity="0.4"/>
+
+    <!-- Achievement stars -->
+    <g transform="translate(-80, -60)" opacity="0.6">
+      <polygon points="-5,-2 0,-5 5,-2 0,3" fill="#F59E0B"/>
+    </g>
+    <g transform="translate(80, -60)" opacity="0.6">
+      <polygon points="-5,-2 0,-5 5,-2 0,3" fill="#F59E0B"/>
+    </g>
+    <g transform="translate(-80, 60)" opacity="0.6">
+      <polygon points="-5,-2 0,-5 5,-2 0,3" fill="#F59E0B"/>
+    </g>
+    <g transform="translate(80, 60)" opacity="0.6">
+      <polygon points="-5,-2 0,-5 5,-2 0,3" fill="#F59E0B"/>
+    </g>
+  </g>
+
+  <!-- Bottom text -->
+  <text x="200" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6B7280">
+    SAT Test Platform
+  </text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#9CA3AF">
+    Your journey to success starts here
+  </text>
+</svg>

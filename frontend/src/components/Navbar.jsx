@@ -40,7 +40,7 @@ const Navbar = () => {
     <>
       <NavigationMenuItem>
         <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-          <Link to="/" className={`text-lg font-medium uppercase ${isActive("/") ? "bg-accent text-accent-foreground !font-bold" : ""}`}>
+          <Link to="/" className={`text-lg font-medium uppercase ${isActive('/') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
             Home
           </Link>
         </NavigationMenuLink>
@@ -50,14 +50,14 @@ const Navbar = () => {
         <>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/test-list" className={`text-lg font-medium uppercase ${isActive("/test-list") ? "bg-accent text-accent-foreground font-bold" : ""}`}>
+              <Link to="/test-list" className={`text-lg font-medium uppercase ${isActive('/test-list') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
                 My Tests
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/submission-history" className={`text-lg uppercase ${isActive("/submission-history") ? "bg-accent text-accent-foreground" : "!font-medium"}`}>
+              <Link to="/submission-history" className={`text-lg uppercase ${isActive('/submission-history') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
                 My Submissions
               </Link>
             </NavigationMenuLink>
@@ -76,21 +76,21 @@ const Navbar = () => {
         <>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/test-list" className={`text-lg font-medium uppercase ${isActive("/admin/test-list") ? "bg-accent text-accent-foreground font-bold" : ""}`}>
+              <Link to="/admin/test-list" className={`text-lg font-medium uppercase ${isActive('/admin/test-list') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
                 Test Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/student-management" className={`text-lg font-medium uppercase ${isActive("/admin/student-management") ? "bg-accent text-accent-foreground font-bold" : ""}`}>
+              <Link to="/admin/student-management" className={`text-lg font-medium uppercase ${isActive('/admin/student-management') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
                 Student Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/admin/submissions" className={`text-lg font-medium uppercase ${isActive("/admin/submissions") ? "bg-accent text-accent-foreground font-bold" : ""}`}>
+              <Link to="/admin/submissions" className={`text-lg font-medium uppercase ${isActive('/admin/submissions') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
                 Submissions
               </Link>
             </NavigationMenuLink>
@@ -110,19 +110,19 @@ const Navbar = () => {
   const renderMobileLinks = () => (
     <>
       <SheetClose asChild>
-        <Link to="/" className={`block py-2 text-lg font-medium uppercase ${isActive("/") ? "bg-secondary text-secondary-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}>
+        <Link to="/" className={`block py-2 text-lg font-medium uppercase ${isActive('/') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
           Home
         </Link>
       </SheetClose>
       {role === "student" && (
         <>
           <SheetClose asChild>
-            <Link to="/test-list" className={`block py-2 text-lg font-medium uppercase ${isActive("/test-list") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/test-list" className={`block py-2 text-lg font-medium uppercase ${isActive('/test-list') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
               My Tests
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Link to="/submission-history" className={`block py-2 text-lg font-medium uppercase ${isActive("/submission-history") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/submission-history" className={`block py-2 text-lg font-medium uppercase ${isActive('/submission-history') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
               My Submissions
             </Link>
           </SheetClose>
@@ -133,17 +133,17 @@ const Navbar = () => {
       {role === "admin" && (
         <>
           <SheetClose asChild>
-            <Link to="/admin/test-list" className={`block py-2 text-lg font-medium uppercase ${isActive("/admin/test-list") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/admin/test-list" className={`block py-2 text-lg font-medium uppercase ${isActive('/admin/test-list') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
             Test Management
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Link to="/admin/student-management" className={`block py-2 text-lg font-medium uppercase ${isActive("/admin/student-management") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/admin/student-management" className={`block py-2 text-lg font-medium uppercase ${isActive('/admin/student-management') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
             Student Management
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Link to="/admin/submissions" className={`block py-2 text-lg font-medium uppercase ${isActive("/admin/submissions") ? "bg-secondary text-secondary-foreground font-bold" : "hover:bg-accent hover:text-accent-foreground"}`}>
+            <Link to="/admin/submissions" className={`block py-2 text-lg font-medium uppercase ${isActive('/admin/submissions') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
             Submissions
             </Link>
           </SheetClose>
@@ -153,7 +153,7 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="border-b mt-5 pb-2">
+    <nav className="border-b mt-5 pb-2 ">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -190,7 +190,7 @@ const Navbar = () => {
               // showName
               />
               <span 
-                className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className="cursor-pointer hover:text-[hsl(var(--primary))] transition-colors"
                 onClick={() => {
                   // Programmatically click the UserButton to open the menu
                   const userButton = document.querySelector('[data-clerk-element="userButton"]');
