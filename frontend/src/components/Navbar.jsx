@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser, UserButton } from "@clerk/clerk-react";
 import { useTheme } from "./theme-provider";
+import PaymentButton from "./PaymentButton";
+import CustomerPortal from "./CustomerPortal";
+import TestPolarButton from "./TestPolarButton";
 
 // shadcn/ui components
 import {
@@ -30,13 +33,29 @@ const Navbar = () => {
   const { user, isSignedIn } = useUser();
   const { theme, setTheme } = useTheme();
 
-  if (!isSignedIn || !user) return null;
+  // Debug logging
+  useEffect(() => {
+    console.log('🟢 Navbar rendered');
+    console.log('🟢 Location:', location.pathname);
+    console.log('🟢 User signed in:', isSignedIn);
+    console.log('🟢 User:', user?.id);
+    console.log('🟢 User role:', user?.publicMetadata?.role);
+  }, [location.pathname, isSignedIn, user]);
+
+  if (!isSignedIn || !user) {
+    console.log('🟢 User not signed in, returning null');
+    return null;
+  }
 
   const role = user?.publicMetadata?.role;
   const isActive = (path) => location.pathname === path;
 
   // Render navigation links based on user role
-  const renderNavLinks = () => (
+  const renderNavLinks = () => {
+    console.log('🟢 renderNavLinks called');
+    console.log('🟢 User role:', role);
+
+    return (
     <>
       <NavigationMenuItem>
         <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -64,10 +83,25 @@ const Navbar = () => {
           </NavigationMenuItem>
           {/* <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-              <Link to="/submission-history" className={isActive("/submission-history") ? "bg-accent text-accent-foreground" : ""}>
-                My submissions
+              <Link to="/pro" className={isActive("/pro") ? "bg-accent text-accent-foreground" : ""}>
+                PRO
               </Link>
             </NavigationMenuLink>
+          </NavigationMenuItem> */}
+          {/* <NavigationMenuItem>
+            <div className="px-2">
+              <TestPolarButton />
+            </div>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <div className="px-2">
+              <PaymentButton productId="814199b9-07a6-4fe4-a1dc-e808cfa16f5c" variant="default" />
+            </div>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <div className="px-2">
+              <CustomerPortal variant="outline" />
+            </div>
           </NavigationMenuItem> */}
         </>
       )}
@@ -106,6 +140,7 @@ const Navbar = () => {
       )}
     </>
   );
+  };
 
   const renderMobileLinks = () => (
     <>

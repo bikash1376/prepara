@@ -25,6 +25,7 @@ import AdminTestPreview from "./components/AdminTestPreview";
 import Tests from "./components/Tests";
 import AdminAiChat from "./components/AdminAiChat";
 import LandingPage from "./components/LandingPage";
+import PaymentSuccess from "./components/PaymentSuccess";
 
 
 
@@ -33,20 +34,31 @@ const HomePage = () => {
   const { user, isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔴 HomePage rendered');
+    console.log('🔴 User loaded:', isLoaded);
+    console.log('🔴 User signed in:', isSignedIn);
+    console.log('🔴 User:', user?.id);
+  }, [isLoaded, isSignedIn, user]);
+
   useEffect(() => {
     if (!isLoaded) return; // Wait for Clerk to load
 
     if (isSignedIn && user) {
       const role = user.publicMetadata?.role;
       if (!role) {
+        console.log('🔴 No role found, redirecting to login');
         navigate("/login");
         return;
       }
 
       // Redirect to appropriate dashboard based on role
       if (role === "admin") {
+        console.log('🔴 Admin user, redirecting to admin dashboard');
         navigate("/admin/dashboard");
       } else {
+        console.log('🔴 Student user, redirecting to student dashboard');
         navigate("/student/dashboard");
       }
     }
@@ -55,6 +67,7 @@ const HomePage = () => {
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {
+    console.log('🔴 Clerk not loaded yet');
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -65,6 +78,7 @@ const HomePage = () => {
   }
 
   // Show landing page for unauthenticated users
+  console.log('🔴 Showing landing page');
   return <LandingPage />;
 };
 
@@ -205,6 +219,7 @@ const AppContent = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login/*" element={<AuthForm mode="login" />} />
         <Route path="/signup/*" element={<AuthForm mode="signup" />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
       </Routes>
     </>
   );

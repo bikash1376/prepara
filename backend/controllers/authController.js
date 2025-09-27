@@ -58,7 +58,7 @@ export const getUserProfile = async (req, res) => {
       { 
         clerkId: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        username: clerkUser.username,
+        username: clerkUser.username || undefined,
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       },
@@ -69,7 +69,7 @@ export const getUserProfile = async (req, res) => {
       user: {
         id: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        username: clerkUser.username,
+        username: clerkUser.username || undefined,
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       }
@@ -95,7 +95,7 @@ export const syncUser = async (req, res) => {
         {
           clerkId: id,
           email: email_addresses[0]?.email_address,
-          username: data.username,
+          username: data.username || undefined,
           name: `${first_name || ''} ${last_name || ''}`.trim() || data.username,
           role: role
         },

@@ -21,10 +21,10 @@ import uploadRoutes from './routes/upload.js';
 dotenv.config();
 
 // Debug: Check if environment variables are loaded
-console.log('Environment check:');
-console.log('CLERK_SECRET_KEY exists:', !!process.env.CLERK_SECRET_KEY);
-console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
-console.log('PORT:', process.env.PORT); 
+// console.log('Environment check:');
+// console.log('CLERK_SECRET_KEY exists:', !!process.env.CLERK_SECRET_KEY);
+// console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+// console.log('PORT:', process.env.PORT); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -74,14 +74,14 @@ app.use((err, req, res, next) => {
   // Log the error with stack trace in development
   const isDevelopment = process.env.NODE_ENV !== 'production';
   
-  console.error('\n--- Error ---');
-  console.error('Path:', req.path);
-  console.error('Method:', req.method);
-  console.error('Error:', err.message);
+  // console.error('\n--- Error ---');
+  // console.error('Path:', req.path);
+  // console.error('Method:', req.method);
+  // console.error('Error:', err.message);
   if (isDevelopment) {
-    console.error('Stack:', err.stack);
+    // console.error('Stack:', err.stack);
   }
-  console.error('--- End Error ---\n');
+  // console.error('--- End Error ---\n');
   
   // Set headers for JSON response
   res.setHeader('Content-Type', 'application/json');

@@ -84,7 +84,7 @@ export const getAllTestsWithStatus = async (req, res) => {
         // Get user's submissions
         const userSubmissions = await Submission.find({ userId }).select('testId');
         const submittedTestIds = userSubmissions.map(sub => sub.testId.toString());
-        console.log("User submissions:", submittedTestIds);
+        // console.log("User submissions:", submittedTestIds);
         
         // Add status to each test
         const testsWithStatus = tests.map(test => ({
@@ -93,7 +93,7 @@ export const getAllTestsWithStatus = async (req, res) => {
             isCompleted: submittedTestIds.includes(test._id.toString())
         }));
         
-        console.log("Returning tests with status:", testsWithStatus);
+        // console.log("Returning tests with status:", testsWithStatus);
         res.json(testsWithStatus);
     } catch (error) {
         console.error("Error fetching tests with status:", error);

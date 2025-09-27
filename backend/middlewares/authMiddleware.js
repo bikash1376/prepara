@@ -44,12 +44,12 @@ export const protect = async (req, res, next) => {
       const role = clerkUser.publicMetadata?.role || 'student';
 
       // Sync user to MongoDB if not exists
-      await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { clerkId: userId },
         {
           clerkId: userId,
           email: clerkUser.emailAddresses[0]?.emailAddress,
-          username: clerkUser.username,
+          username: clerkUser.username || undefined,
           name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
           role: role
         },
@@ -60,7 +60,7 @@ export const protect = async (req, res, next) => {
       req.user = {
         id: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        username: clerkUser.username,
+        username: clerkUser.username || undefined,
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
         role: role
       };
