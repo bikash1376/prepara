@@ -145,18 +145,129 @@ const TestSubmission = () => {
       const data = await response.json();
       if (response.ok) {
         setTest(data);
-        // Check for saved timer
-        const savedTimer = localStorage.getItem(`test_timer_${id}`);
-        // Also check if we should be in a specific section/module if we were saving that state,
-        // but for now only timer persistence is requested.
-        // We also need to be careful: if the user finished the test, we shouldn't restore.
-        // But here we assume if they are fetching, they are retaking or resuming.
-        
-        if (savedTimer) {
-             setTimer(parseInt(savedTimer, 10));
-        } else {
-             setTimer(data.sections[0].modules[0].timer);
+
+        // Check test status
+        const isStarted = localStorage.getItem(`test_started_${id}`);
+        const isPaused = localStorage.getItem(`test_paused_${id}`);
+        const savedStateStr = localStorage.getItem(`test_state_${id}`);
+
+        // Case 1: Reload detected (Started but not paused)
+        if (isStarted && !isPaused) {
+           alert("Reloading the page during the test is not allowed. Your test will now be submitted.");
+           
+           // Submit empty/partial test
+           const allAnswers = [];
+           for (let s = 0; s < data.sections.length; s++) {
+             for (let m = 0; m < data.sections[s].modules.length; m++) {
+               // Fill with empty strings
+               allAnswers.push(...new Array(data.sections[s].modules[m].questions.length).fill(""));
+             }
+           }
+           
+           try {
+              await fetch(
+                "http://localhost:5000/api/v1/submission/submit",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    testId: id,
+                    answers: allAnswers,
+                    timeTaken: 0, // Could try to calculate real time if start time was saved
+                  }),
+                }
+              );
+              // Clear flags
+              localStorage.removeItem(`test_started_${id}`);
+              localStorage.removeItem(`test_paused_${id}`);
+              localStorage.removeItem(`test_state_${id}`);
+              localStorage.removeItem(`test_timer_${id}`);
+              
+              navigate("/test-list");
+           } catch (e) {
+             console.error("Auto-submission failed", e);
+             navigate("/test-list");
+           }
+           return;
         }
+
+        // Case 2: Resume (Started, Paused and has State)
+        if (isStarted && isPaused && savedStateStr) {
+           try {
+             const savedState = JSON.parse(savedStateStr);
+             
+             // Restore scalar values
+             setCurrentSection(savedState.currentSection);
+             setCurrentModule(savedState.currentModule);
+             setTimer(savedState.timer);
+             setModuleAnswers(savedState.moduleAnswers);
+
+             // Restore Sets for reviewedQuestions
+             // Structure: { secIdx: { modIdx: [qIdxs] } } -> needs to be Sets
+             const restoredReviewed = {};
+             if (savedState.reviewedQuestions) {
+                Object.keys(savedState.reviewedQuestions).forEach(sKey => {
+                    restoredReviewed[sKey] = {};
+                    Object.keys(savedState.reviewedQuestions[sKey]).forEach(mKey => {
+                        restoredReviewed[sKey][mKey] = new Set(savedState.reviewedQuestions[sKey][mKey]);
+                    });
+                });
+             }
+             setReviewedQuestions(restoredReviewed);
+
+             // Restore Sets for struckOutOptions
+             // Structure: { secIdx: { modIdx: { qIdx: [optIdxs] } } }
+             const restoredStruck = {};
+             if (savedState.struckOutOptions) {
+                Object.keys(savedState.struckOutOptions).forEach(sKey => {
+                    restoredStruck[sKey] = {};
+                    Object.keys(savedState.struckOutOptions[sKey]).forEach(mKey => {
+                        restoredStruck[sKey][mKey] = {};
+                        Object.keys(savedState.struckOutOptions[sKey][mKey]).forEach(qKey => {
+                            restoredStruck[sKey][mKey][qKey] = new Set(savedState.struckOutOptions[sKey][mKey][qKey]);
+                        });
+                    });
+                });
+             }
+             setStruckOutOptions(restoredStruck);
+
+             // Resume means we are active again, so unpause
+             localStorage.removeItem(`test_paused_${id}`);
+
+           } catch (e) {
+             console.error("Error restoring state", e);
+             // Fallback to fresh start if corrupted
+             initializeFreshTest(data);
+           }
+        } else {
+           // Case 3: Fresh Start
+           initializeFreshTest(data);
+           localStorage.setItem(`test_started_${id}`, 'true');
+        }
+
+      } else {
+        alert("Failed to load test");
+        navigate("/test-list");
+      }
+    } catch (error) {
+       console.error(error);
+      alert("Error loading test");
+      navigate("/test-list");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializeFreshTest = (data) => {
+        // Check for specific saved timer only if not doing full state restore (legacy support or partial)
+        // But for this new logic, we rely on state restore. 
+        // We'll trust the default or saved timer if just timer was saved (backward compat), 
+        // but generally fresh start = fresh timer.
+        setTimer(data.sections[0].modules[0].timer);
+        
         setModuleAnswers({
           0: {
             0: new Array(data.sections[0].modules[0].questions.length).fill(""),
@@ -167,16 +278,32 @@ const TestSubmission = () => {
             0: new Set(),
           },
         });
-      } else {
-        alert("Failed to load test");
-        navigate("/test-list");
-      }
-    } catch {
-      alert("Error loading test");
+  };
+
+  const handleSaveAndExit = () => {
+      // Serialize state
+      const stateToSave = {
+          currentSection,
+          currentModule,
+          moduleAnswers,
+          timer,
+          reviewedQuestions, // JSON.stringify converts Sets to Arrays automatically if we wrap logic or default? 
+                             // Wait, JSON.stringify(Set) is {}. We must manually convert.
+          struckOutOptions
+      };
+
+      // Custom replacer to handle Sets
+      const jsonString = JSON.stringify(stateToSave, (key, value) => {
+          if (value instanceof Set) {
+              return Array.from(value);
+          }
+          return value;
+      });
+
+      localStorage.setItem(`test_state_${id}`, jsonString);
+      localStorage.setItem(`test_paused_${id}`, 'true');
+      localStorage.setItem(`test_started_${id}`, 'true'); // Ensure this is set
       navigate("/test-list");
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Timer for module or break
@@ -417,6 +544,9 @@ const TestSubmission = () => {
     } finally {
       setSubmitting(false);
       localStorage.removeItem(`test_timer_${id}`);
+      localStorage.removeItem(`test_started_${id}`);
+      localStorage.removeItem(`test_paused_${id}`);
+      localStorage.removeItem(`test_state_${id}`);
     }
   };
 
@@ -712,6 +842,7 @@ const TestSubmission = () => {
           setShowScientific={setShowScientific}
           navigate={navigate}
           currentSection={currentSection}
+          onSaveAndExit={handleSaveAndExit}
         />
       </div>
 

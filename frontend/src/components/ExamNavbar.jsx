@@ -89,9 +89,9 @@ const ExamNavbar = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem
+            <DropdownMenuItem
               className="text-red-600 focus:text-red-700"
-              onClick={() => navigate("/test-list")}
+              onClick={onSaveAndExit}
             >
           
               <Save className="w-4 h-4 mr-2"  />
