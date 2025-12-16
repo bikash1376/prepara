@@ -27,13 +27,12 @@ const TestResults = () => {
     setLoading(true);
     try {
       if (!authLoaded) {
-        // console.log("Authentication not loaded yet");
-        return;
+
       }
       
       const token = await getToken();
       if (!token) {
-        console.error("Clerk token not found. User may be signed out.");
+
         setLoading(false);
         return;
       }
@@ -51,7 +50,7 @@ const TestResults = () => {
       const data = await response.json();
       setResults(data);
     } catch (error) {
-      console.error("An error occurred during the fetch operation:", error);
+
       setResults(null);
     } finally {
       setLoading(false);

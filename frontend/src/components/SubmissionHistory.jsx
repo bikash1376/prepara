@@ -30,9 +30,7 @@ const SubmissionHistory = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // console.log('SubmissionHistory useEffect - authLoaded:', authLoaded);
     if (authLoaded) {
-      // console.log('Auth loaded, fetching submission history...');
       fetchSubmissionHistory();
     }
   }, [authLoaded]);
@@ -42,27 +40,21 @@ const SubmissionHistory = () => {
     setLoading(true);
     try {
       if (!authLoaded) {
-        // console.log("Authentication not loaded yet");
         return;
       }
       
       const token = await getToken();
-      // console.log('Token received:', token ? `Token: ${token.substring(0, 20)}...` : 'No token');
       if (!token) {
-        console.error("No authentication token available");
         setSubmissions([]);
         setLoading(false);
         return;
       }
       
-      // console.log('Making API call to:', "http://localhost:5000/api/v1/submission/history");
       const response = await fetch("http://localhost:5000/api/v1/submission/history", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
-      // console.log('Response status:', response.status, response.statusText);
       
       if (response.ok) {
         const data = await response.json();
@@ -80,7 +72,6 @@ const SubmissionHistory = () => {
         setSubmissions([]);
       }
     } catch (error) {
-      console.error("Error fetching submission history:", error);
       setSubmissions([]);
     } finally {
       setLoading(false);

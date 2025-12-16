@@ -55,7 +55,7 @@ const StudentMgmt = () => {
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching users:", error);
+
       setUsers([]);
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ const StudentMgmt = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
-      console.error("Error deleting user:", error);
+
       fetchUsers(); // Re-fetch to sync state on error
     }
   };
@@ -89,7 +89,7 @@ const StudentMgmt = () => {
       });
       fetchUsers();
     } catch (error) {
-      console.error("Error changing role:", error);
+
     }
   };
 
@@ -103,16 +103,13 @@ const StudentMgmt = () => {
       setLoadingSubmissions(true);
       try {
         const token = await getToken();
-        console.log("Fetching submissions for userId:", userId);
         const res = await fetch(`http://localhost:5000/api/v1/submissions/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Response status:", res.status);
         const data = await res.json();
-        console.log("Response data:", data);
         setUserSubmissions((prev) => ({ ...prev, [userId]: data }));
       } catch (error) {
-        console.error("Error fetching submissions:", error);
+
       } finally {
         setLoadingSubmissions(false);
       }
