@@ -193,9 +193,9 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold">
-              <img src="/logo.png" alt="Logo" width={220} className="" />
-            </span>
+            <div className="text-2xl font-bold text-primary">
+              Prepara
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -221,7 +221,7 @@ const Navbar = () => {
 
             {/* User Button */}
             <div className="flex items-center space-x-2">
-              <UserButton afterSignOutUrl="/login" 
+              <UserButton afterSignOutUrl="/" 
               // showName
               />
               <span 
@@ -257,7 +257,7 @@ const Navbar = () => {
             </Button>
 
             {/* Mobile User Button */}
-            <UserButton afterSignOutUrl="/login" />
+            <UserButton afterSignOutUrl="/" />
 
             {/* Mobile Sheet Trigger */}
             <Sheet>

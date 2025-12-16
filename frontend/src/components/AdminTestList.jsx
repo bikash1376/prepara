@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import { FilePlus, Pencil, Trash2, Loader2, AlertCircle, Play } from "lucide-react";
+import { FilePlus, Pencil, Trash2, Loader2, AlertCircle, Play, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,6 +75,32 @@ const AdminTestList = () => {
     }
   };
 
+  const handleToggleVisibility = async (id) => {
+    try {
+      const token = await getToken();
+      const res = await fetch(`http://localhost:5000/api/v1/test/${id}/toggle-visibility`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setMessage(data.message);
+        // Update the test in the list
+        setTests((prevTests) =>
+          prevTests.map((test) =>
+            test._id === id ? { ...test, isHidden: data.test.isHidden } : test
+          )
+        );
+      } else {
+        setMessage("Error toggling test visibility. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error toggling test visibility:", error);
+      setMessage("An unexpected error occurred.");
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-2xl py-8">
       <Card>
@@ -112,17 +138,36 @@ const AdminTestList = () => {
                   key={test._id}
                   className="flex items-center justify-between rounded-md border p-4"
                 >
-                  <span className="font-medium">{test.testname}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{test.testname}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      test.isHidden 
+                        ? 'bg-gray-200 text-gray-700' 
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {test.isHidden ? 'Hidden' : 'Visible'}
+                    </span>
+                  </div>
                   <div className="space-x-2">
-                  <Button
-  variant="outline"
-  size="icon"
-  onClick={() => navigate(`/admin/preview-test/${test._id}`)}
-  className="text-green-600 hover:text-green-700"
->
-  <Play className="h-4 w-4" />
-  <span className="sr-only">Preview Test</span>
-</Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleToggleVisibility(test._id)}
+                      className={test.isHidden ? "text-gray-600 hover:text-gray-700" : "text-blue-600 hover:text-blue-700"}
+                      title={test.isHidden ? "Show test to students" : "Hide test from students"}
+                    >
+                      {test.isHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <span className="sr-only">{test.isHidden ? "Show Test" : "Hide Test"}</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => navigate(`/admin/preview-test/${test._id}`)}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <Play className="h-4 w-4" />
+                      <span className="sr-only">Preview Test</span>
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"

@@ -31,7 +31,8 @@ const sectionSchema = new mongoose.Schema({
 
 const testSchema = new mongoose.Schema({
     testname: { type: String, required: true },
-    sections: [sectionSchema]
+    sections: [sectionSchema],
+    isHidden: { type: Boolean, default: false } // Admin can hide tests from students
 });
 
 export default mongoose.model('Test', testSchema);

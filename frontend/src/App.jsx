@@ -26,6 +26,7 @@ import Tests from "./components/Tests";
 import AdminAiChat from "./components/AdminAiChat";
 import LandingPage from "./components/LandingPage";
 import PaymentSuccess from "./components/PaymentSuccess";
+import Loader from "./components/Loader";
 
 
 
@@ -70,9 +71,7 @@ const HomePage = () => {
     console.log('🔴 Clerk not loaded yet');
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
-        </div>
+        <Loader size="large" text="Initializing..." />
       </div>
     );
   }

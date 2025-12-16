@@ -13,16 +13,16 @@ import { Loader2, Clock, Calendar, BookOpen, Award, BarChart2, CheckCircle } fro
 
 
 const TestCard = ({ test, onTakeTest }) => (
-  <div className="group border rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 bg-[#F1F0FE] dark:bg-gray-800  max-w-sm h-[250px] ">
+  <div className="group border rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:border-primary transition-all duration-200 bg-card dark:bg-card max-w-sm h-[250px] ">
     <div className="p-6 h-full flex flex-col">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
-            <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 rounded-full bg-primary/10 dark:bg-primary/20">
+            <BookOpen className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{test.testname}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Full-length practice test</p>
+            <h3 className="text-lg font-semibold text-foreground">{test.testname}</h3>
+            <p className="text-sm text-muted-foreground">Full-length practice test</p>
           </div>
         </div>
         {/* <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
@@ -106,8 +106,8 @@ const TestCard = ({ test, onTakeTest }) => (
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="flex items-start space-x-3">
-                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
-                  <FiClock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 rounded-full bg-primary/10 dark:bg-primary/20 mt-0.5">
+                  <FiClock className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-medium">Test Duration</h4>
@@ -117,8 +117,8 @@ const TestCard = ({ test, onTakeTest }) => (
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
-                  <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 rounded-full bg-primary/10 dark:bg-primary/20 mt-0.5">
+                  <BookOpen className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-medium">Questions</h4>
@@ -128,8 +128,8 @@ const TestCard = ({ test, onTakeTest }) => (
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="p-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 mt-0.5">
-                  <Award className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 rounded-full bg-primary/10 dark:bg-primary/20 mt-0.5">
+                  <Award className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-medium">Scoring</h4>
@@ -143,7 +143,7 @@ const TestCard = ({ test, onTakeTest }) => (
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button onClick={() => onTakeTest(test._id)} className="bg-[#7A6AD8] hover:bg-[#6B5BC7] rounded-lg">
+              <Button onClick={() => onTakeTest(test._id)} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg">
                 Start Test
               </Button>
             </DialogFooter>
@@ -156,14 +156,14 @@ const TestCard = ({ test, onTakeTest }) => (
 
 // Stats Card Component
 const StatCard = ({ icon: Icon, title, value, description }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+  <div className="bg-card rounded-lg p-4 shadow-sm">
     <div className="flex items-center">
-      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+      <div className="p-2 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary">
         <Icon className="w-5 h-5" />
       </div>
       <div className="ml-4">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-        <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="text-2xl font-semibold text-foreground">{value}</p>
       </div>
     </div>
   </div>
@@ -238,42 +238,19 @@ const TestList = () => {
   // const completedTests = tests.filter(test => test.isCompleted);
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-950`} style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className={`min-h-screen bg-background`} style={{ fontFamily: 'Poppins, sans-serif' }}>
       {/* Hero Section */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 ">
+      <div className="bg-card border-b border-border ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-left">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
               Welcome back, {userName}!
             </h1>
-            <p className="mt-3 text-xl text-gray-500 dark:text-gray-400">
-              Prepare for success with our SAT practice tests
+            <p className="mt-3 text-xl text-muted-foreground">
+              Prepare for success with our GRE practice tests
             </p>
           </div>
           
-          {/* Stats Grid */}
-          {/* <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard 
-              icon={BookOpen} 
-              title="Available Tests" 
-              value={availableTests.length} 
-            />
-            <StatCard 
-              icon={Award} 
-              title="Highest Score" 
-              value={lastScore} 
-            />
-            <StatCard 
-              icon={BarChart2} 
-              title="Average Score" 
-              value="--/--" 
-            />
-            <StatCard 
-              icon={Clock} 
-              title="Time Spent" 
-              value="0h 0m" 
-            />
-          </div> */}
         </div>
       </div>
 
@@ -282,8 +259,8 @@ const TestList = () => {
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Practice Tests</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-2xl font-bold text-foreground">Practice Tests</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Select a test to begin your practice session
             </p>
           </div>
@@ -312,14 +289,14 @@ const TestList = () => {
 
         {/* Error State */}
         {error && (
-          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 mb-6">
+          <div className="rounded-md bg-destructive/10 p-4 mb-6">
             <div className="flex">
               <div className="flex-shrink-0">
-                <FiAlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                <FiAlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error loading tests</h3>
-                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                <h3 className="text-sm font-medium text-destructive">Error loading tests</h3>
+                <div className="mt-2 text-sm text-destructive/90">
                   <p>{error}</p>
                 </div>
                 <div className="mt-4">
@@ -327,7 +304,7 @@ const TestList = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => fetchTestsWithStatus(true)}
-                    className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-200 dark:hover:bg-red-900/30"
+                    className="border-destructive text-destructive hover:bg-destructive/10"
                   >
                     <FiRefreshCw className="w-4 h-4 mr-2" />
                     Try again
@@ -340,10 +317,10 @@ const TestList = () => {
 
         {/* Empty State */}
         {!error && availableTests.length === 0 && (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <FiFileText className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No tests available</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-center py-16 bg-card rounded-lg border border-border">
+            <FiFileText className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-2 text-sm font-medium text-foreground">No tests available</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
               There are no tests available at the moment. Please check back later.
             </p>
             <div className="mt-6">
@@ -373,18 +350,19 @@ const TestList = () => {
         )}
 
         {/* Test Taking Tips */}
-        <div className="mt-12 bg-blue-50 dark:bg-blue-900/10 rounded-xl p-6">
+        <div className="mt-12 bg-primary/5 dark:bg-primary/10 rounded-xl p-6">
           <div className="md:flex md:items-center md:justify-between">
             <div className="md:w-2/3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Test Taking Tips</h3>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="text-lg font-medium text-foreground">Test Taking Tips</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
                 Maximize your score with these essential test-taking strategies and time management tips.
               </p>
             </div>
             <div className="mt-4 md:mt-0">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+
+                  <Button variant="outline" className="border-primary/20 text-foreground hover:bg-primary/10">
                     <BookOpen className="w-4 h-4 mr-2" />
                     View Tips
                   </Button>

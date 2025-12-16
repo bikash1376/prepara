@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
@@ -98,6 +99,7 @@ const TestPolarButton = () => {
   if (!isLoaded) {
     return (
       <Button disabled variant="outline">
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
         Loading...
       </Button>
     );

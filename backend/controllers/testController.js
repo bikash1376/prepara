@@ -78,7 +78,8 @@ export const getAllTestsWithStatus = async (req, res) => {
         const userId = req.user.id;
     //   console.log("Fetching tests for user:", userId);
         
-        const tests = await Test.find().select('_id testname');
+        // Only show non-hidden tests to students
+        const tests = await Test.find({ isHidden: false }).select('_id testname');
     //   console.log("Found tests:", tests.length);
         
         // Get user's submissions
@@ -167,5 +168,28 @@ export const deleteTest = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 
+}
+
+// Toggle test visibility (admin only)
+export const toggleTestVisibility = async (req, res) => {
+    try {
+        const test = await Test.findById(req.params.id);
+        if (!test) return res.status(404).json({ message: "Test not found" });
+        
+        test.isHidden = !test.isHidden;
+        await test.save();
+        
+        res.json({ 
+            message: `Test ${test.isHidden ? 'hidden' : 'shown'} successfully`, 
+            test: {
+                _id: test._id,
+                testname: test.testname,
+                isHidden: test.isHidden
+            }
+        });
+    } catch (error) {
+        console.error("Error toggling test visibility:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 }
 

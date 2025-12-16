@@ -7,6 +7,12 @@ import { ChevronDown, Loader2, MoreVertical, X, Flag, ArrowRight, ArrowUp } from
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
 import { IoIosArrowUp } from "react-icons/io";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const TestSubmission = () => {
   const { id } = useParams();
@@ -139,7 +145,18 @@ const TestSubmission = () => {
       const data = await response.json();
       if (response.ok) {
         setTest(data);
-        setTimer(data.sections[0].modules[0].timer);
+        // Check for saved timer
+        const savedTimer = localStorage.getItem(`test_timer_${id}`);
+        // Also check if we should be in a specific section/module if we were saving that state,
+        // but for now only timer persistence is requested.
+        // We also need to be careful: if the user finished the test, we shouldn't restore.
+        // But here we assume if they are fetching, they are retaking or resuming.
+        
+        if (savedTimer) {
+             setTimer(parseInt(savedTimer, 10));
+        } else {
+             setTimer(data.sections[0].modules[0].timer);
+        }
         setModuleAnswers({
           0: {
             0: new Array(data.sections[0].modules[0].questions.length).fill(""),
@@ -166,7 +183,13 @@ const TestSubmission = () => {
   useEffect(() => {
     if (loading || inBreak) return;
     if (timer <= 0) return;
-    const t = setTimeout(() => setTimer(timer - 1), 1000);
+    const t = setTimeout(() => {
+        setTimer(newTimer => {
+            const nextTime = newTimer - 1;
+            localStorage.setItem(`test_timer_${id}`, nextTime.toString());
+            return nextTime;
+        });
+    }, 1000);
     return () => clearTimeout(t);
   }, [timer, loading, inBreak]);
 
@@ -393,6 +416,7 @@ const TestSubmission = () => {
       alert("Error submitting test");
     } finally {
       setSubmitting(false);
+      localStorage.removeItem(`test_timer_${id}`);
     }
   };
 
@@ -469,20 +493,34 @@ const TestSubmission = () => {
     if (!text) return null;
     
     try {
-      // Split text by LaTeX delimiters and render accordingly
-      const parts = text.split(/(\$\$[^$]+\$\$|\$[^$]+\$)/);
-      
+      // Split text by LaTeX delimiters: $$...$$, $...$, \[...\], \(...\)
+      // We look for:
+      // 1. $$...$$ (Block)
+      // 2. \[...\] (Block)
+      // 3. $...$ (Inline)
+      // 4. \(...\) (Inline)
+      // The regex captures these groups.
+      const parts = text.split(/(\$\$[^$]+\$\$|\\\[[\s\S]*?\\\]|\$[^$]+\$|\\\(.*?\\\))/);
+
       return (
         <span style={{ whiteSpace: 'pre-wrap' }}>
           {parts.map((part, index) => {
             if (part.startsWith('$$') && part.endsWith('$$')) {
-              // Block math
+              // Block math $$...$$
+              const latex = part.slice(2, -2);
+              return <BlockMath key={index} math={latex} />;
+            } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
+              // Block math \[...\]
               const latex = part.slice(2, -2);
               return <BlockMath key={index} math={latex} />;
             } else if (part.startsWith('$') && part.endsWith('$')) {
-              // Inline math
+              // Inline math $...$
               const latex = part.slice(1, -1);
               return <InlineMath key={index} math={latex} />;
+            } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
+               // Inline math \(...\)
+               const latex = part.slice(2, -2);
+               return <InlineMath key={index} math={latex} />;
             } else {
               // Regular text - preserve line breaks and spacing
               return <span key={index} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
@@ -491,7 +529,7 @@ const TestSubmission = () => {
         </span>
       );
     } catch (error) {
-      return <span className="text-red-500">LaTeX Error: {error.message}</span>;
+      return <span className="text-destructive">LaTeX Error: {error.message}</span>;
     }
   };
 
@@ -659,9 +697,9 @@ const TestSubmission = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-blue-50 dark:bg-black shadow-sm">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-card border-b border-border shadow-sm">
         <ExamNavbar
           section={section}
           module={module}
@@ -708,7 +746,7 @@ const TestSubmission = () => {
         {/* Main Content Layout */}
         <div className="flex gap-6 mb-6">
           {/* Question Panel - Left Side */}
-          <div className={`bg-white dark:bg-neutral-950 rounded-lg p-6 transition-all duration-300 ${
+          <div className={`bg-card text-card-foreground border border-border rounded-lg p-6 transition-all duration-300 ${
             showDesmos || showScientific ? "w-1/4" : "w-1/2"
           }`}>
             <div className="mb-4">
@@ -716,7 +754,7 @@ const TestSubmission = () => {
                 Question {currentQuestion + 1} of {module.questions.length}
               </span> */}
 
-              <h2 className="font-serif text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2 whitespace-pre-wrap">
+              <h2 className="font-serif text-xl font-semibold text-foreground mt-2 whitespace-pre-wrap">
                 <LaTeXRenderer text={q.question} />
               </h2>
               
@@ -738,7 +776,7 @@ const TestSubmission = () => {
 
               {q.additionalText && (
                 <div className="mt-4">
-                  <p className="font-serif text-lg text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                  <p className="font-serif text-lg text-foreground whitespace-pre-wrap">
                     <LaTeXRenderer text={q.additionalText} />
                   </p>
                 </div>
@@ -747,21 +785,21 @@ const TestSubmission = () => {
           </div>
 
           {/* Options Panel - Right Side */}
-          <div className={`bg-white dark:bg-neutral-950 rounded-lg p-6 transition-all duration-300 ${
+          <div className={`bg-card text-card-foreground border border-border rounded-lg p-6 transition-all duration-300 ${
             showDesmos || showScientific ? "w-1/4" : "w-1/2"
           }`}>
             {/* Question number and Mark for Review */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                <span className="text-lg font-semibold text-foreground">
                   {currentQuestion + 1}
                 </span>
                 <button
                   onClick={() => toggleQuestionForReview(currentQuestion)}
                   className={`flex items-center gap-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
                     getReviewedQuestions().has(currentQuestion)
-                      ? "bg-yellow-500 dark:bg-yellow-600 text-white hover:bg-yellow-600 dark:hover:bg-yellow-500"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                      ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   }`}
                 >
                   <Flag className="w-4 h-4" />
@@ -771,7 +809,7 @@ const TestSubmission = () => {
             </div>
             
             <div className="mb-4">
-              <span className="font-medium text-gray-800 dark:text-gray-200">
+              <span className="font-medium text-foreground">
                 Which choice completes the text with the most logical and precise word or phrase?
               </span>
             </div>
@@ -799,11 +837,11 @@ const TestSubmission = () => {
                       className="mr-3"
                     />
 
-                    <span className="font-semibold mr-2 text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold mr-2 text-foreground">
                       {String.fromCharCode(65 + optionIndex)}.
                     </span>
 
-                    <span className="text-gray-700 dark:text-gray-300">
+                    <span className="text-foreground">
                       <LaTeXRenderer text={option} />
                     </span>
                   </label>
@@ -812,8 +850,8 @@ const TestSubmission = () => {
                     onClick={() => toggleStrikeThrough(currentQuestion, optionIndex)}
                     className={`p-2 rounded-full transition-colors ${
                       getStruckOutOptions().has(optionIndex)
-                        ? "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                     }`}
                     title={getStruckOutOptions().has(optionIndex) ? "Remove strike-through" : "Strike through option"}
                   >
@@ -875,29 +913,93 @@ const TestSubmission = () => {
       </div>
 
       {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-blue-50 dark:bg-black border-t-[.2px] border-black dark:border-gray-700 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border shadow-lg">
         <div className="flex justify-between items-center px-6 py-4">
           {/* Left side - User name */}
-          <div className="text-gray-700 dark:text-gray-300 font-medium">
+          <div className="text-foreground font-medium">
             {user?.fullName || user?.firstName || 'Student'}
           </div>
 
           {/* Center - Question indicator (clickable) */}
-          <button
-            onClick={() => setIsQuestionSwitchOpen(true)}
-            className="px-4 py-2 text-gray-100 dark:text-gray-300 font-medium hover:text-white dark:hover:text-white transition-colors cursor-pointer bg-black flex items-center"
-          >
-            Question {currentQuestion + 1} of {module.questions.length}
-           
-            <IoIosArrowUp className="w-4 h-4 ml-2" />
-          </button>
+          {/* Center - Question indicator (clickable) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="px-4 py-2 text-gray-100 dark:text-gray-300 font-medium hover:text-white dark:hover:text-white transition-colors cursor-pointer bg-black flex items-center rounded-md focus:outline-none"
+              >
+                Question {currentQuestion + 1} of {module.questions.length}
+                <IoIosArrowUp className="w-4 h-4 ml-2" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" className="w-[340px] p-4 mb-2" align="center">
+              <div className="flex items-center justify-between gap-2 mb-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
+                  <span>Answered</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                   <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full"></div>
+                   <span>Review</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 bg-muted border border-border rounded-full"></div>
+                  <span>Unanswered</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                   <div className="w-2.5 h-2.5 border-2 border-primary rounded-full"></div>
+                   <span>Current</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-5 gap-2">
+                {module.questions.map((_, qIdx) => {
+                   // Logic matching the original dialog
+                   // answersArr is available in scope
+                   const isAnswered = answersArr[qIdx] !== "";
+                   const isForReview = getReviewedQuestions().has(qIdx);
+                   const isCurrent = qIdx === currentQuestion;
+
+                   let bgClass = "bg-muted text-muted-foreground border border-transparent hover:bg-muted/80";
+                   
+                   if (isAnswered && isForReview) {
+                      bgClass = "bg-yellow-500 text-white hover:bg-yellow-600 border-transparent";
+                   } else if (isAnswered) {
+                      bgClass = "bg-green-500 text-white hover:bg-green-600 border-transparent";
+                   } else if (isForReview) {
+                      bgClass = "bg-yellow-400 text-white hover:bg-yellow-500 border-transparent";
+                   }
+
+                   return (
+                     <DropdownMenuItem
+                       key={qIdx}
+                       onSelect={() => jumpToQuestion(qIdx)}
+                       className={`
+                         flex relative items-center justify-center h-10 w-full rounded-md font-semibold text-sm cursor-pointer transition-all
+                         ${bgClass}
+                         ${isCurrent ? "ring-2 ring-primary ring-offset-2 z-10" : ""}
+                         focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                       `}
+                     >
+                       {qIdx + 1}
+                     </DropdownMenuItem>
+                   );
+                })}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-border text-center">
+                <p className="text-xs text-muted-foreground font-medium">
+                   {section.name} - {module.name}
+                </p>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Right side - Navigation buttons */}
           <div className="flex items-center gap-4">
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(currentQuestion - 1)}
-                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
+                className="px-6 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 font-medium"
               >
                 Back
               </button>
@@ -906,7 +1008,7 @@ const TestSubmission = () => {
             {currentQuestion < module.questions.length - 1 ? (
               <button
                 onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 font-medium"
+                className="px-6 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 font-medium"
               >
                 Next
               </button>

@@ -71,115 +71,65 @@ const AuthForm = ({ mode = "login" }) => {
   // If user is signed in but doesn't have a role, show role selection
   if (isSignedIn && user && !user.publicMetadata?.role) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
-            {/* Left side - Image (70-80% width) */}
-            <div className="hidden lg:block lg:col-span-3 xl:col-span-4">
-              <img
-                src="/auth-illustration.jpg"
-                alt="Authentication"
-                className="w-full h-auto object-contain"
-                onError={(e) => {
-                  // Fallback to SVG if JPEG doesn't exist
-                  e.target.src = '/auth-illustration.svg';
-                }}
-              />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-2xl mx-auto px-4">
+          <div className="bg-card rounded-lg shadow-lg p-8 border border-border">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Select Your Role</h2>
+              <p className="text-muted-foreground text-sm">
+                Welcome {user.firstName || user.username}! Please select your role to continue:
+              </p>
             </div>
 
-            {/* Right side - Role Selection Form (20-30% width) */}
-            <div className="lg:col-span-2 xl:col-span-1">
-              <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto lg:mx-0 w-full">
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">Select Your Role</h2>
-                  <p className="text-gray-600 text-sm">
-                    Welcome {user.firstName || user.username}! Please select your role to continue:
-                  </p>
-                </div>
+            <select
+              className="w-full border border-input rounded-lg px-4 py-3 mb-6 text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="student">Student</option>
+              {/* <option value="admin">Admin</option> */}
+            </select>
 
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="student">Student</option>
-                  {/* <option value="admin">Admin</option> */}
-                </select>
+            <button
+              onClick={handleRoleSelection}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? "Setting Role..." : "Continue"}
+            </button>
 
-                <button
-                  onClick={handleRoleSelection}
-                  className="w-full px-6 py-3 bg-[#7A6AD8] text-white rounded-lg hover:bg-[#6B5BC7] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={loading}
-                >
-                  {loading ? "Setting Role..." : "Continue"}
-                </button>
-
-                {message && (
-                  <div className="mt-4 text-center text-red-600 text-sm">{message}</div>
-                )}
-              </div>
-            </div>
+            {message && (
+              <div className="mt-4 text-center text-destructive text-sm">{message}</div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // Show Clerk's built-in authentication components with side-by-side layout
+  // Show Clerk's built-in authentication components centered
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
-          {/* Left side - Image (70-80% width) */}
-          <div className="hidden lg:block lg:col-span-3 xl:col-span-3">
-            <img
-              src="image.png"
-              alt="Authentication"
-              className="w-full h-auto object-contain"
-              onError={(e) => {
-                // Fallback to SVG if JPEG doesn't exist
-                e.target.src = '/auth-illustration.svg';
-              }}
-            />
-          </div>
-
-          {/* Right side - Auth Forms (20-30% width) */}
-          <div className="lg:col-span-2 xl:col-span-1">
-            {/* <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto lg:mx-0 w-full"> */}
-              {/* <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  {mode === "signup" ? "Create Account" : "Welcome Back"}
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  {mode === "signup"
-                    ? "Sign up to start your SAT practice journey"
-                    : "Sign in to continue your practice"
-                  }
-                </p>
-              </div> */}
-
-              {mode === "signup" ? (
-                <SignUp
-                  routing="path"
-                  path="/signup"
-                  signInUrl="/login"
-                  afterSignUpUrl="/"
-                  fallbackRedirectUrl="/"
-                />
-              ) : (
-                <SignIn
-                  routing="path"
-                  path="/login"
-                  signUpUrl="/signup"
-                  afterSignInUrl="/"
-                  fallbackRedirectUrl="/"
-                />
-              )}
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-md mx-auto px-4">
+        {mode === "signup" ? (
+          <SignUp
+            routing="path"
+            path="/signup"
+            signInUrl="/login"
+            afterSignUpUrl="/"
+            fallbackRedirectUrl="/"
+          />
+        ) : (
+          <SignIn
+            routing="path"
+            path="/login"
+            signUpUrl="/signup"
+            afterSignInUrl="/"
+            fallbackRedirectUrl="/"
+          />
+        )}
       </div>
-    // </div>
+    </div>
   );
 };
 

@@ -15,7 +15,6 @@
   "dependencies": {
     "@clerk/backend": "^2.13.0",
     "@clerk/clerk-sdk-node": "^4.13.23",
-    "@polar-sh/express": "^0.3.7",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
@@ -29,7 +28,6 @@
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "uploadthing": "^7.7.4",
     "uuid": "^13.0.0"
   }
 }
