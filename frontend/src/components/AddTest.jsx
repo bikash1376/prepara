@@ -181,7 +181,7 @@ const AddTest = () => {
       const token = await getToken();
       if (!token) throw new Error('No authentication token found');
 
-      const res = await fetch("http://localhost:5000/api/v1/test/add", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

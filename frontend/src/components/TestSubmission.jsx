@@ -119,7 +119,7 @@ const TestSubmission = () => {
     try {
       const token = await getToken();
       const response = await fetch(
-        `http://localhost:5000/api/v1/test/${id}/access`,
+        `${import.meta.env.VITE_API_URL}/api/v1/test/${id}/access`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -150,7 +150,7 @@ const TestSubmission = () => {
       const token = await getToken();
       
       // 1. Fetch Test Data
-      const testResponse = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
+      const testResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await testResponse.json();
@@ -164,7 +164,7 @@ const TestSubmission = () => {
       setTest(data);
 
       // 2. Fetch Progress from DB
-      const progressResponse = await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+      const progressResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}/progress`, {
          headers: { Authorization: `Bearer ${token}` },
       });
       const progressData = await progressResponse.json();
@@ -288,7 +288,7 @@ const TestSubmission = () => {
         status: "IN_PROGRESS"
       };
 
-      await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}/progress`, {
           method: 'POST',
           headers: { 
              'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ const TestSubmission = () => {
        
        try {
           await fetch(
-            "http://localhost:5000/api/v1/submission/submit",
+            `${import.meta.env.VITE_API_URL}/api/v1/submission/submit`,
             {
               method: "POST",
               headers: {
@@ -361,7 +361,7 @@ const TestSubmission = () => {
       };
 
       try {
-        await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}/progress`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -589,7 +589,7 @@ const TestSubmission = () => {
       }
       const timeTaken = Math.floor((Date.now() - startTime) / 1000);
       const response = await fetch(
-        "http://localhost:5000/api/v1/submission/submit",
+        `${import.meta.env.VITE_API_URL}/api/v1/submission/submit`,
         {
           method: "POST",
           headers: {

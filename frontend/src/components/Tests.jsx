@@ -38,7 +38,7 @@ const TestList = () => {
       const token = await getToken();
       if (!token) throw new Error("Authentication token not available.");
       
-      const response = await fetch("http://localhost:5000/api/v1/test/with-status", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/with-status`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       

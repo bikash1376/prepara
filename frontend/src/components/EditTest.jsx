@@ -43,7 +43,7 @@ const EditTest = () => {
     const fetchTestData = async () => {
       try {
         const token = await getToken();
-        const response = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/tests/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error('Failed to fetch test data');
@@ -182,7 +182,7 @@ const EditTest = () => {
     setMessage("");
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/tests/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       const token = await getToken();
-      const res = await fetch("http://localhost:5000/api/v1/admin/users", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
   const deleteUser = async (id) => {
     try {
       const token = await getToken();
-      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
   const changeRole = async (id, role) => {
     try {
       const token = await getToken();
-      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
       setLoadingSubmissions(true);
       try {
         const token = await getToken();
-        const res = await fetch(`http://localhost:5000/api/v1/admin/submissions/${userId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/submissions/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

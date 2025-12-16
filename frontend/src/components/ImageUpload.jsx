@@ -19,7 +19,7 @@ const ImageUpload = ({ onImageChange, currentImage }) => {
       setIsUploading(true);
       setUploadProgress(30); // Show some initial progress
       
-      const response = await axios.post('http://localhost:5000/api/upload/image', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${localStorage.getItem('token')}`

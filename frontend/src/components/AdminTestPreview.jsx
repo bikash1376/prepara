@@ -50,7 +50,7 @@ const AdminTestPreview = () => {
     const fetchTest = async () => {
       try {
         const token = await getToken();
-        const response = await fetch(`http://localhost:5000/api/v1/admin/tests/${id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/tests/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

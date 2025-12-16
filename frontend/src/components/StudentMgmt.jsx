@@ -49,7 +49,7 @@ const StudentMgmt = () => {
     setLoading(true);
     try {
       const token = await getToken();
-      const res = await fetch("http://localhost:5000/api/v1/admin/users", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -66,7 +66,7 @@ const StudentMgmt = () => {
     setUsers(users.filter(u => u._id !== id)); // Optimistic UI update
     try {
       const token = await getToken();
-      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -79,7 +79,7 @@ const StudentMgmt = () => {
   const changeRole = async (id, role) => {
     try {
       const token = await getToken();
-      await fetch(`http://localhost:5000/api/v1/admin/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ const StudentMgmt = () => {
       setLoadingSubmissions(true);
       try {
         const token = await getToken();
-        const res = await fetch(`http://localhost:5000/api/v1/submissions/user/${userId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/submissions/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

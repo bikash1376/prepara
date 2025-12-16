@@ -50,7 +50,7 @@ const SubmissionHistory = () => {
         return;
       }
       
-      const response = await fetch("http://localhost:5000/api/v1/submission/history", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/submission/history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

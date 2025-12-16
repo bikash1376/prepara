@@ -20,7 +20,7 @@ const TestViewer = ({ test: propTest, onSubmit, isPreview = false, isSubmitting 
     if (propTest) {
       setTest(propTest);
     } else if (id) {
-      fetch(`http://localhost:5000/api/v1/test/${id}`)
+      fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}`)
         .then((res) => res.json())
         .then((data) => setTest(data));
     }

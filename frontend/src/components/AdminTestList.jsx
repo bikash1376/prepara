@@ -41,7 +41,7 @@ const AdminTestList = () => {
     setLoading(true);
     try {
       const token = await getToken();
-      const res = await fetch("http://localhost:5000/api/v1/admin/tests", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/tests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -58,7 +58,7 @@ const AdminTestList = () => {
   const handleDelete = async (id) => {
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -78,7 +78,7 @@ const AdminTestList = () => {
   const handleToggleVisibility = async (id) => {
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/v1/test/${id}/toggle-visibility`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}/toggle-visibility`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });

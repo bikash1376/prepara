@@ -33,7 +33,7 @@ const AuthForm = ({ mode = "login" }) => {
 
     try {
       const token = await getToken();
-      const response = await fetch("http://localhost:5000/api/v1/auth/set-role", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/set-role`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

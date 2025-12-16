@@ -27,12 +27,12 @@ dotenv.config();
 // console.log('PORT:', process.env.PORT); 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'https://prepara-eight.vercel.app/'],
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'https://prepara-eight.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
