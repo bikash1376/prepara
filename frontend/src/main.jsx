@@ -15,7 +15,7 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* 1. ThemeProvider is now the outermost provider */}
-    <ThemeProvider defaultTheme="system" storageKey="testsat-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="prepara-ui-theme">
       {/* 2. ClerkThemeProvider sits inside, so it can access the theme */}
       <ClerkThemeProvider publishableKey={PUBLISHABLE_KEY}>
         <App />

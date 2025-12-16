@@ -21,13 +21,13 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/npm\/@clerk/, '/npm/@clerk'),
         configure: (proxy, options) => {
           proxy.on('error', (err, req, res) => {
-            console.log('proxy error', err);
+// proxy error suppressed
           });
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Sending Request to Clerk CDN:', req.method, req.url);
+// Sending Request to Clerk CDN suppressed
           });
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log('Received Response from Clerk CDN:', proxyRes.statusCode, req.url);
+// Received Response from Clerk CDN suppressed
           });
         },
       }
