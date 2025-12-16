@@ -32,7 +32,7 @@ router.post('/image', upload.single('image'), async (req, res) => {
     
     // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
-      folder: 'test-sat', // Optional folder in Cloudinary
+      folder: 'test-prepara', // Optional folder in Cloudinary
       public_id: `img-${uuidv4()}`,
       resource_type: 'auto'
     });
