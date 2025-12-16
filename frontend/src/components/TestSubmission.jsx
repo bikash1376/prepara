@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -17,6 +17,7 @@ import {
 const TestSubmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { getToken } = useAuth();
   const { user } = useUser();
 
@@ -138,120 +139,75 @@ const TestSubmission = () => {
 
   const fetchTest = async () => {
     try {
+      // Create a local flag
+      const isFreshStart = location.state?.freshStart;
+      
+      // Clear the freshStart state so it doesn't persist on reload
+      if (isFreshStart) {
+        window.history.replaceState({}, ''); 
+      }
+
       const token = await getToken();
-      const response = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
+      
+      // 1. Fetch Test Data
+      const testResponse = await fetch(`http://localhost:5000/api/v1/test/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
-      if (response.ok) {
-        setTest(data);
-
-        // Check test status
-        const isStarted = localStorage.getItem(`test_started_${id}`);
-        const isPaused = localStorage.getItem(`test_paused_${id}`);
-        const savedStateStr = localStorage.getItem(`test_state_${id}`);
-
-        // Case 1: Reload detected (Started but not paused)
-        if (isStarted && !isPaused) {
-           alert("Reloading the page during the test is not allowed. Your test will now be submitted.");
-           
-           // Submit empty/partial test
-           const allAnswers = [];
-           for (let s = 0; s < data.sections.length; s++) {
-             for (let m = 0; m < data.sections[s].modules.length; m++) {
-               // Fill with empty strings
-               allAnswers.push(...new Array(data.sections[s].modules[m].questions.length).fill(""));
-             }
-           }
-           
-           try {
-              await fetch(
-                "http://localhost:5000/api/v1/submission/submit",
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    testId: id,
-                    answers: allAnswers,
-                    timeTaken: 0, // Could try to calculate real time if start time was saved
-                  }),
-                }
-              );
-              // Clear flags
-              localStorage.removeItem(`test_started_${id}`);
-              localStorage.removeItem(`test_paused_${id}`);
-              localStorage.removeItem(`test_state_${id}`);
-              localStorage.removeItem(`test_timer_${id}`);
-              
-              navigate("/test-list");
-           } catch (e) {
-             console.error("Auto-submission failed", e);
-             navigate("/test-list");
-           }
-           return;
-        }
-
-        // Case 2: Resume (Started, Paused and has State)
-        if (isStarted && isPaused && savedStateStr) {
-           try {
-             const savedState = JSON.parse(savedStateStr);
-             
-             // Restore scalar values
-             setCurrentSection(savedState.currentSection);
-             setCurrentModule(savedState.currentModule);
-             setTimer(savedState.timer);
-             setModuleAnswers(savedState.moduleAnswers);
-
-             // Restore Sets for reviewedQuestions
-             // Structure: { secIdx: { modIdx: [qIdxs] } } -> needs to be Sets
-             const restoredReviewed = {};
-             if (savedState.reviewedQuestions) {
-                Object.keys(savedState.reviewedQuestions).forEach(sKey => {
-                    restoredReviewed[sKey] = {};
-                    Object.keys(savedState.reviewedQuestions[sKey]).forEach(mKey => {
-                        restoredReviewed[sKey][mKey] = new Set(savedState.reviewedQuestions[sKey][mKey]);
-                    });
-                });
-             }
-             setReviewedQuestions(restoredReviewed);
-
-             // Restore Sets for struckOutOptions
-             // Structure: { secIdx: { modIdx: { qIdx: [optIdxs] } } }
-             const restoredStruck = {};
-             if (savedState.struckOutOptions) {
-                Object.keys(savedState.struckOutOptions).forEach(sKey => {
-                    restoredStruck[sKey] = {};
-                    Object.keys(savedState.struckOutOptions[sKey]).forEach(mKey => {
-                        restoredStruck[sKey][mKey] = {};
-                        Object.keys(savedState.struckOutOptions[sKey][mKey]).forEach(qKey => {
-                            restoredStruck[sKey][mKey][qKey] = new Set(savedState.struckOutOptions[sKey][mKey][qKey]);
-                        });
-                    });
-                });
-             }
-             setStruckOutOptions(restoredStruck);
-
-             // Resume means we are active again, so unpause
-             localStorage.removeItem(`test_paused_${id}`);
-
-           } catch (e) {
-             console.error("Error restoring state", e);
-             // Fallback to fresh start if corrupted
-             initializeFreshTest(data);
-           }
-        } else {
-           // Case 3: Fresh Start
-           initializeFreshTest(data);
-           localStorage.setItem(`test_started_${id}`, 'true');
-        }
-
-      } else {
-        alert("Failed to load test");
-        navigate("/test-list");
+      const data = await testResponse.json();
+      
+      if (!testResponse.ok) {
+         alert(data.message || "Failed to load test");
+         navigate("/test-list");
+         return;
       }
+      
+      setTest(data);
+
+      // 2. Fetch Progress from DB
+      const progressResponse = await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+         headers: { Authorization: `Bearer ${token}` },
+      });
+      const progressData = await progressResponse.json();
+      const progress = progressData.progress; // This might be null
+
+      // Check Status logic
+      
+      // We process the progress if it exists
+      if (progress) {
+         if (progress.status === 'IN_PROGRESS') {
+             // Calculate elapsed time since last update
+             const lastUpdate = new Date(progress.lastUpdated).getTime();
+             const now = Date.now();
+             const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
+             
+             // Adjust timer
+             const adjustedTimer = Math.max(0, progress.timer - elapsedSeconds);
+             
+             // Restore state with adjusted timer
+             restoreState(progress, adjustedTimer);
+             
+             // If we just loaded and adjusted time, we should probably update the DB 
+             // with the new "anchor" so subsequent reloads don't double-count if logic drifts 
+             // (though logic is idempotent based on Now).
+             
+             // Ensure local is confirmed started
+             localStorage.setItem(`test_started_${id}`, 'true');
+
+         } else if (progress.status === 'PAUSED') {
+             // Resume without penalty
+             restoreState(progress, progress.timer);
+             // Update status to IN_PROGRESS directly
+             updateStatusToInProgress(token, null, progress.timer); // Pass current timer
+             localStorage.setItem(`test_started_${id}`, 'true');
+         }
+      } else {
+         // No progress found - Start Fresh
+         initializeFreshTest(data);
+         // Create initial progress record
+         updateStatusToInProgress(token, data); 
+         localStorage.setItem(`test_started_${id}`, 'true');
+      }
+
     } catch (error) {
        console.error(error);
       alert("Error loading test");
@@ -261,13 +217,120 @@ const TestSubmission = () => {
     }
   };
 
+  // Sync progress to DB when module/section changes (to set anchor for timer)
+  useEffect(() => {
+      if (!loading && test && !inBreak) {
+          // Verify we have a token
+          getToken().then(token => {
+              if (token) {
+                // We pass current timer explicitly to ensure we catch the fresh module start time
+                // But we need to be careful not to overwrite if this triggers on initial load 
+                // BEFORE fetchTest is done? 
+                // 'loading' check handles that.
+                
+                // We use a small delay or check to ensure we aren't invalidating the "adjust timer" logic
+                // logic: if we just restored state, currentSection/Module might set.
+                // We want to save IF this is a legitimate transition.
+                
+                updateStatusToInProgress(token);
+              }
+          });
+      }
+      // eslint-disable-next-line
+  }, [currentSection, currentModule]); // Sync on module transition
+
+  const restoreState = (progress, adjustedTimer = null) => {
+     setCurrentSection(progress.currentSection);
+     setCurrentModule(progress.currentModule);
+     setTimer(adjustedTimer !== null ? adjustedTimer : progress.timer);
+     setModuleAnswers(progress.moduleAnswers || {});
+
+     // Restore Sets
+     const restoredReviewed = {};
+     if (progress.reviewedQuestions) {
+        Object.keys(progress.reviewedQuestions).forEach(sKey => {
+            restoredReviewed[sKey] = {};
+            Object.keys(progress.reviewedQuestions[sKey]).forEach(mKey => {
+                restoredReviewed[sKey][mKey] = new Set(progress.reviewedQuestions[sKey][mKey]);
+            });
+        });
+     }
+     setReviewedQuestions(restoredReviewed);
+
+     const restoredStruck = {};
+     if (progress.struckOutOptions) {
+        Object.keys(progress.struckOutOptions).forEach(sKey => {
+            restoredStruck[sKey] = {};
+            Object.keys(progress.struckOutOptions[sKey]).forEach(mKey => {
+                restoredStruck[sKey][mKey] = {};
+                Object.keys(progress.struckOutOptions[sKey][mKey]).forEach(qKey => {
+                    restoredStruck[sKey][mKey][qKey] = new Set(progress.struckOutOptions[sKey][mKey][qKey]);
+                });
+            });
+        });
+     }
+     setStruckOutOptions(restoredStruck);
+  };
+
+  const updateStatusToInProgress = async (token, testData = null, timerOverride = null) => {
+      const payload = {
+        currentSection,
+        currentModule,
+        timer: timerOverride !== null ? timerOverride : (testData ? testData.sections[0].modules[0].timer : timer),
+        moduleAnswers,
+        // Convert Sets for storage
+        reviewedQuestions: JSON.parse(JSON.stringify(reviewedQuestions, (key, value) => 
+            value instanceof Set ? Array.from(value) : value
+        )),
+        struckOutOptions: JSON.parse(JSON.stringify(struckOutOptions, (key, value) => 
+            value instanceof Set ? Array.from(value) : value
+        )),
+        status: "IN_PROGRESS"
+      };
+
+      await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+          method: 'POST',
+          headers: { 
+             'Content-Type': 'application/json',
+             Authorization: `Bearer ${token}` 
+          },
+          body: JSON.stringify(payload)
+      });
+  };
+
+  const autoSubmitTest = async (token, testData) => {
+       const allAnswers = [];
+       for (let s = 0; s < testData.sections.length; s++) {
+         for (let m = 0; m < testData.sections[s].modules.length; m++) {
+           allAnswers.push(...new Array(testData.sections[s].modules[m].questions.length).fill(""));
+         }
+       }
+       
+       try {
+          await fetch(
+            "http://localhost:5000/api/v1/submission/submit",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                testId: id,
+                answers: allAnswers,
+                timeTaken: 0,
+              }),
+            }
+          );
+          navigate("/test-list");
+       } catch (e) {
+         console.error("Auto-submission failed", e);
+         navigate("/test-list");
+       }
+  };
+
   const initializeFreshTest = (data) => {
-        // Check for specific saved timer only if not doing full state restore (legacy support or partial)
-        // But for this new logic, we rely on state restore. 
-        // We'll trust the default or saved timer if just timer was saved (backward compat), 
-        // but generally fresh start = fresh timer.
         setTimer(data.sections[0].modules[0].timer);
-        
         setModuleAnswers({
           0: {
             0: new Array(data.sections[0].modules[0].questions.length).fill(""),
@@ -280,30 +343,37 @@ const TestSubmission = () => {
         });
   };
 
-  const handleSaveAndExit = () => {
-      // Serialize state
-      const stateToSave = {
+  const handleSaveAndExit = async () => {
+      const token = await getToken();
+      
+      const payload = {
           currentSection,
           currentModule,
-          moduleAnswers,
           timer,
-          reviewedQuestions, // JSON.stringify converts Sets to Arrays automatically if we wrap logic or default? 
-                             // Wait, JSON.stringify(Set) is {}. We must manually convert.
-          struckOutOptions
+          moduleAnswers,
+          reviewedQuestions: JSON.parse(JSON.stringify(reviewedQuestions, (key, value) => 
+            value instanceof Set ? Array.from(value) : value
+          )),
+          struckOutOptions: JSON.parse(JSON.stringify(struckOutOptions, (key, value) => 
+            value instanceof Set ? Array.from(value) : value
+          )),
+          status: "PAUSED"
       };
 
-      // Custom replacer to handle Sets
-      const jsonString = JSON.stringify(stateToSave, (key, value) => {
-          if (value instanceof Set) {
-              return Array.from(value);
-          }
-          return value;
-      });
-
-      localStorage.setItem(`test_state_${id}`, jsonString);
-      localStorage.setItem(`test_paused_${id}`, 'true');
-      localStorage.setItem(`test_started_${id}`, 'true'); // Ensure this is set
-      navigate("/test-list");
+      try {
+        await fetch(`http://localhost:5000/api/v1/test/${id}/progress`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(payload)
+        });
+        navigate("/test-list");
+      } catch (error) {
+          console.error("Failed to save progress", error);
+          alert("Failed to save progress. Please try again.");
+      }
   };
 
   // Timer for module or break
@@ -767,39 +837,39 @@ const TestSubmission = () => {
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* Backdrop */}
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm"
           onClick={() => onOpenChange(false)}
         />
         
         {/* Dialog */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="relative bg-card text-card-foreground rounded-lg shadow-xl p-6 max-w-md w-full mx-4 border border-border">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-3">
+              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
                 <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+              <h2 className="text-xl font-semibold">
                 {isLastModule ? "Submit Test" : "Submit Module"}
               </h2>
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl font-bold"
+              className="text-muted-foreground hover:text-foreground text-3xl font-bold"
             >
               ×
             </button>
           </div>
 
           <div className="mb-6">
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
+            <p className="text-muted-foreground mb-4">
               {isLastModule 
                 ? "You are about to submit your entire test. Once submitted, you will not be able to make any changes or return to review your answers."
                 : "You are about to submit this module. Once submitted, you will not be able to return to this module or make any changes to your answers."
               }
             </p>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-lg p-3">
               <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium">
                 ⚠️ This action cannot be undone
               </p>
@@ -809,14 +879,14 @@ const TestSubmission = () => {
           <div className="flex gap-3">
             <button
               onClick={() => onOpenChange(false)}
-              className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+              className="flex-1 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirmSubmit}
               disabled={submitting}
-              className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50 transition-colors font-medium"
+              className="flex-1 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 disabled:opacity-50 transition-colors font-medium"
             >
               {submitting ? "Submitting..." : (isLastModule ? "Submit Test" : "Submit Module")}
             </button>

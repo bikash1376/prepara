@@ -193,3 +193,60 @@ export const toggleTestVisibility = async (req, res) => {
     }
 }
 
+import TestProgress from '../models/TestProgress.js';
+
+// ... existing code ...
+
+// Save or Update Test Progress
+export const saveTestProgress = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const testId = req.params.id;
+        const { 
+            currentSection, 
+            currentModule, 
+            timer, 
+            moduleAnswers, 
+            reviewedQuestions, 
+            struckOutOptions,
+            status 
+        } = req.body;
+
+        const progress = await TestProgress.findOneAndUpdate(
+            { userId, testId },
+            {
+                userId,
+                testId,
+                currentSection,
+                currentModule,
+                timer,
+                moduleAnswers,
+                reviewedQuestions,
+                struckOutOptions,
+                status: status || "IN_PROGRESS",
+                lastUpdated: Date.now()
+            },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        res.json({ message: "Progress saved", progress });
+    } catch (error) {
+        console.error("Error saving progress:", error);
+        res.status(500).json({ message: "Failed to save progress" });
+    }
+};
+
+// Get Test Progress
+export const getTestProgress = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const testId = req.params.id;
+
+        const progress = await TestProgress.findOne({ userId, testId });
+
+        res.json({ progress });
+    } catch (error) {
+        console.error("Error fetching progress:", error);
+        res.status(500).json({ message: "Failed to fetch progress" });
+    }
+};

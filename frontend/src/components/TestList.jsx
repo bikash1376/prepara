@@ -223,7 +223,7 @@ const TestList = () => {
   }, [authLoaded, userLoaded, user, fetchTestsWithStatus]);
 
   const handleTakeTest = (testId) => {
-    navigate(`/test-submission/${testId}`);
+    navigate(`/test-submission/${testId}`, { state: { freshStart: true } });
   };
 
   if (loading && tests.length === 0) {
