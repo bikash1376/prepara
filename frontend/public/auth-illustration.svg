@@ -17,7 +17,7 @@
       <line x1="10" y1="-15" x2="10" y2="15" stroke="white" stroke-width="1" opacity="0.3"/>
 
       <!-- Book title -->
-      <text x="0" y="-5" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">SAT</text>
+      <text x="0" y="-5" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">GRE</text>
       <text x="0" y="3" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="white" opacity="0.8">Practice</text>
     </g>
 
@@ -44,7 +44,7 @@
 
   <!-- Bottom text -->
   <text x="200" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6B7280">
-    SAT Test Platform
+    Prepara Platform
   </text>
   <text x="200" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#9CA3AF">
     Your journey to success starts here
