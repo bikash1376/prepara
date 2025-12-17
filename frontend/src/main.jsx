@@ -1,25 +1,33 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './components/theme-provider';
-import { ClerkThemeProvider } from './components/ClerkThemeProvider'; // Import the new wrapper
+import { ClerkThemeProvider } from './components/ClerkThemeProvider';
 import './index.css';
 import App from './App.jsx';
+
+// 🔍 Eruda — enable only when needed
+if (window.location.search.includes('eruda=true')) {
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+  script.onload = () => {
+    window.eruda.init();
+  };
+  document.body.appendChild(script);
+}
 
 // Import your publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
+  throw new Error('Missing Publishable Key');
 }
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* 1. ThemeProvider is now the outermost provider */}
     <ThemeProvider defaultTheme="system" storageKey="prepara-ui-theme">
-      {/* 2. ClerkThemeProvider sits inside, so it can access the theme */}
       <ClerkThemeProvider publishableKey={PUBLISHABLE_KEY}>
         <App />
       </ClerkThemeProvider>
     </ThemeProvider>
-  </StrictMode>,
+  </StrictMode>
 );
