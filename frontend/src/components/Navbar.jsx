@@ -129,6 +129,13 @@ const Navbar = () => {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link to="/admin/dashboard/?eruda=true" target="_blank" className={`text-lg font-medium uppercase ${isActive('/student/dashboard/') ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}`}>
+                Debug
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
           {/* <NavigationMenuItem>
             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
               <Link to="/admin/ai-chat" className={isActive("/admin/ai-chat") ? "bg-accent text-accent-foreground font-bold" : ""}>
@@ -180,6 +187,11 @@ const Navbar = () => {
           <SheetClose asChild>
             <Link to="/admin/submissions" className={`block py-2 text-lg font-medium uppercase ${isActive('/admin/submissions') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
             Submissions
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/student/dashboard/?eruda=true" className={`block py-2 text-lg font-medium uppercase ${isActive('/student/dashboard/') ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]' : 'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'}`}>
+            Debug
             </Link>
           </SheetClose>
         </>
