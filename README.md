@@ -31,3 +31,5 @@
 - **Test Management**: Create, update, and delete practice tests efficiently.
 - **Result Analysis**: Instant scoring and feedback on completed tests.
 - **Resume Capability**: Save progress and resume tests at any time without losing data.
+
+On mobile browsers go to https://prepara.bksh.site/?eruda=true for dev tools
