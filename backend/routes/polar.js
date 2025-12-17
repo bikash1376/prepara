@@ -20,10 +20,10 @@ router.get('/debug', (req, res) => {
 
 // Checkout route - initiate payment
 router.get('/checkout', (req, res, next) => {
-  console.log('Polar checkout called with products:', req.query.products);
-  console.log('Environment:', process.env.POLAR_ENV);
-  console.log('Access token exists:', !!process.env.POLAR_ACCESS_TOKEN);
-  console.log('Access token length:', process.env.POLAR_ACCESS_TOKEN?.length || 0);
+  // console.log('Polar checkout called with products:', req.query.products);
+  // console.log('Environment:', process.env.POLAR_ENV);
+  // console.log('Access token exists:', !!process.env.POLAR_ACCESS_TOKEN);
+  // console.log('Access token length:', process.env.POLAR_ACCESS_TOKEN?.length || 0);
 
   if (!process.env.POLAR_ACCESS_TOKEN || process.env.POLAR_ACCESS_TOKEN === 'your_polar_access_token_here') {
     return res.status(500).json({
@@ -45,7 +45,7 @@ router.get('/portal', CustomerPortal({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
   server: process.env.POLAR_ENV === "sandbox" ? "sandbox" : "production",
   getCustomerId: (req) => {
-    console.log('Portal access - User:', req.user?.id, 'Polar Customer ID:', req.user?.polarCustomerId);
+    // console.log('Portal access - User:', req.user?.id, 'Polar Customer ID:', req.user?.polarCustomerId);
     // Get Polar customer ID from authenticated user
     return req.user?.polarCustomerId;
   },
@@ -55,7 +55,7 @@ router.get('/portal', CustomerPortal({
 router.post('/webhooks', Webhooks({
   webhookSecret: process.env.POLAR_WEBHOOK_SECRET,
   onPayload: async (payload) => {
-    console.log("Polar webhook received:", payload.type, payload.data);
+    // console.log("Polar webhook received:", payload.type, payload.data);
 
     // Handle different webhook events
     switch (payload.type) {
@@ -72,21 +72,21 @@ router.post('/webhooks', Webhooks({
         await handleSubscriptionCanceled(payload.data);
         break;
       default:
-        console.log("Unhandled webhook type:", payload.type);
+        // console.log("Unhandled webhook type:", payload.type);
     }
   },
 }));
 
 // Helper functions for webhook handling
 async function handleCheckoutCreated(checkout) {
-  console.log("Checkout created:", checkout.id);
+  // console.log("Checkout created:", checkout.id);
 
   // You can store checkout information if needed
   // This is useful for tracking pending payments
 }
 
 async function handleOrderPaid(order) {
-  console.log("Order paid:", order.id);
+  // console.log("Order paid:", order.id);
 
   // Update user's Polar customer ID if not set
   if (order.customerId && order.customerExternalId) {
@@ -102,7 +102,7 @@ async function handleOrderPaid(order) {
 }
 
 async function handleSubscriptionCreated(subscription) {
-  console.log("Subscription created:", subscription.id);
+  // console.log("Subscription created:", subscription.id);
 
   // Update user's subscription status
   if (subscription.customerId) {
@@ -112,7 +112,7 @@ async function handleSubscriptionCreated(subscription) {
 }
 
 async function handleSubscriptionCanceled(subscription) {
-  console.log("Subscription canceled:", subscription.id);
+  // console.log("Subscription canceled:", subscription.id);
 
   // Handle subscription cancellation - revoke access, etc.
   // This depends on your business logic

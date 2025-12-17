@@ -35,15 +35,15 @@ const Navbar = () => {
 
   // Debug logging
   useEffect(() => {
-    console.log('🟢 Navbar rendered');
-    console.log('🟢 Location:', location.pathname);
-    console.log('🟢 User signed in:', isSignedIn);
-    console.log('🟢 User:', user?.id);
-    console.log('🟢 User role:', user?.publicMetadata?.role);
+    // console.log('🟢 Navbar rendered');
+    // console.log('🟢 Location:', location.pathname);
+    // console.log('🟢 User signed in:', isSignedIn);
+    // console.log('🟢 User:', user?.id);
+    // console.log('🟢 User role:', user?.publicMetadata?.role);
   }, [location.pathname, isSignedIn, user]);
 
   if (!isSignedIn || !user) {
-    console.log('🟢 User not signed in, returning null');
+    // console.log('🟢 User not signed in, returning null');
     return null;
   }
 
@@ -52,8 +52,8 @@ const Navbar = () => {
 
   // Render navigation links based on user role
   const renderNavLinks = () => {
-    console.log('🟢 renderNavLinks called');
-    console.log('🟢 User role:', role);
+    // console.log('🟢 renderNavLinks called');
+    // console.log('🟢 User role:', role);
 
     return (
     <>

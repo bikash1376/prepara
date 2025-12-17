@@ -37,10 +37,10 @@ const HomePage = () => {
 
   // Debug logging
   useEffect(() => {
-    console.log('🔴 HomePage rendered');
-    console.log('🔴 User loaded:', isLoaded);
-    console.log('🔴 User signed in:', isSignedIn);
-    console.log('🔴 User:', user?.id);
+    // console.log('🔴 HomePage rendered');
+    // console.log('🔴 User loaded:', isLoaded);
+    // console.log('🔴 User signed in:', isSignedIn);
+    // console.log('🔴 User:', user?.id);
   }, [isLoaded, isSignedIn, user]);
 
   useEffect(() => {
@@ -49,17 +49,17 @@ const HomePage = () => {
     if (isSignedIn && user) {
       const role = user.publicMetadata?.role;
       if (!role) {
-        console.log('🔴 No role found, redirecting to login');
+        // console.log('🔴 No role found, redirecting to login');
         navigate("/login");
         return;
       }
 
       // Redirect to appropriate dashboard based on role
       if (role === "admin") {
-        console.log('🔴 Admin user, redirecting to admin dashboard');
+        // console.log('🔴 Admin user, redirecting to admin dashboard');
         navigate("/admin/dashboard");
       } else {
-        console.log('🔴 Student user, redirecting to student dashboard');
+        // console.log('🔴 Student user, redirecting to student dashboard');
         navigate("/student/dashboard");
       }
     }
@@ -68,7 +68,7 @@ const HomePage = () => {
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {
-    console.log('🔴 Clerk not loaded yet');
+    // console.log('🔴 Clerk not loaded yet');
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader size="large" text="Initializing..." />
@@ -77,7 +77,7 @@ const HomePage = () => {
   }
 
   // Show landing page for unauthenticated users
-  console.log('🔴 Showing landing page');
+  // console.log('🔴 Showing landing page');
   return <LandingPage />;
 };
 

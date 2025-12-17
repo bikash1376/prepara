@@ -9,14 +9,14 @@ const CustomerPortal = ({ className = "", variant = "outline" }) => {
 
   // Debug logging
   useEffect(() => {
-    console.log('🟠 CustomerPortal rendered');
-    console.log('🟠 User:', user?.id);
-    console.log('🟠 Is loaded:', isLoaded);
+    // console.log('🟠 CustomerPortal rendered');
+    // console.log('🟠 User:', user?.id);
+    // console.log('🟠 Is loaded:', isLoaded);
   }, [user, isLoaded]);
 
   const handlePortalAccess = async () => {
-    console.log('🟠 CustomerPortal clicked!');
-    console.log('🟠 User:', user?.id);
+    // console.log('🟠 CustomerPortal clicked!');
+    // console.log('🟠 User:', user?.id);
 
     if (!isLoaded) {
       console.log('❌ Clerk not loaded yet');
@@ -24,7 +24,7 @@ const CustomerPortal = ({ className = "", variant = "outline" }) => {
     }
 
     if (!user) {
-      console.log('❌ No user');
+      // console.log('❌ No user');
       return;
     }
 
