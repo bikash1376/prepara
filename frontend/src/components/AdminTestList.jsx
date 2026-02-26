@@ -22,12 +22,19 @@ const AdminTestList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTests();
-  }, []);
+    if (isLoaded) {
+      if (isSignedIn) {
+        fetchTests();
+      } else {
+        setLoading(false);
+        setMessage("You must be logged in to view tests.");
+      }
+    }
+  }, [isLoaded, isSignedIn]);
 
   // Clear message after 3 seconds
   useEffect(() => {
@@ -41,9 +48,19 @@ const AdminTestList = () => {
     setLoading(true);
     try {
       const token = await getToken();
+      if (!token) {
+        throw new Error("No authentication token available.");
+      }
+      
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/tests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to fetch tests");
+      }
+      
       const data = await res.json();
       setTests(Array.isArray(data) ? data : []);
     } catch (error) {

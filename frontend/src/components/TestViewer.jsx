@@ -220,7 +220,7 @@ const TestViewer = ({ test: propTest, onSubmit, isPreview = false, isSubmitting 
                 key={idx}
                 className={`block border rounded px-4 py-2 cursor-pointer transition ${
                   selectedOption === idx
-                    ? "border-primary bg-primary/10 text-primary-foreground"
+                    ? "border-primary bg-primary/10 text-primary"
                     : "border-border hover:bg-muted"
                 }`}
               >
