@@ -12,26 +12,26 @@ import {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>GRE Test Directions</DialogTitle>
+            <DialogTitle>Test Directions</DialogTitle>
             <DialogDescription>
-              The GRE consists of three main sections: Verbal Reasoning, Quantitative Reasoning, and Analytical Writing.
-              The test is taken on a computer. The total time for the test is approximately 3 hours and 45 minutes.
+              This practice test consists of multiple sections designed to evaluate your skills.
+              The test is taken on a computer and the total time is based on the specific test modules.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <h4 className="text-lg font-bold mb-2">Verbal Reasoning Section</h4>
+            <h4 className="text-lg font-bold mb-2">General Instructions</h4>
             <p className="mb-4">
-              This section consists of two modules measuring your ability to analyze and evaluate written material, synthesize information, and understand relationships among words and concepts.
+              Please read all questions carefully before answering. Each section measures different abilities, including analytical, reasoning, or quantitative skills as applicable.
             </p>
             <p className="mb-4">
-              Questions include reading comprehension, text completion, and sentence equivalence.
+              Pacing yourself is crucial. Keep an eye on the timer, but do not rush.
             </p>
-            <h4 className="text-lg font-bold mb-2">Quantitative Reasoning Section</h4>
+            <h4 className="text-lg font-bold mb-2">Tools & Resources</h4>
             <p className="mb-4">
-              This section also has two modules testing your basic mathematical skills, understanding of elementary mathematical concepts, and ability to reason quantitatively.
+              You may have access to specific tools, such as an on-screen calculator, depending on the requirements of the module you are currently taking.
             </p>
             <p>
-              You will have access to an on-screen calculator for all quantitative questions.
+              Ensure you understand the interface and navigation before starting.
             </p>
           </div>
         </DialogContent>

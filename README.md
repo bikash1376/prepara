@@ -4,7 +4,7 @@
 
 ![Overview](overview.png)
 
-**Prepara** is a comprehensive online digital test platform designed to help students prepare for the GRE. It provides a realistic testing environment, detailed analytics, and progress tracking to ensure success.
+**Prepara** is a comprehensive online digital practice test platform designed to help students prepare for various exams. It provides a realistic testing environment, detailed analytics, and progress tracking to ensure success.
 
 ## Tech Stack
 

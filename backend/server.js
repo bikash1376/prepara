@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import cors from 'cors';
 import path from 'path';
@@ -18,7 +18,6 @@ import adminRoutes from "./routes/adminRoutes.js";
 import submissionRoutes from './routes/submission.js';
 import uploadRoutes from './routes/upload.js';
 
-dotenv.config();
 
 // Debug: Check if environment variables are loaded
 // console.log('Environment check:');
