@@ -1,28 +1,27 @@
 # Prepara
 
+**Prepara** is a comprehensive online digital practice test platform designed to help students prepare for various exams. It provides a realistic testing environment, detailed analytics, and progress tracking to ensure success.
+
 ![Prepara](prepara.png)
 
 ![Dashboard](dashboard.png)
 
 ![Overview](overview.png)
 
-**Prepara** is a comprehensive online digital practice test platform designed to help students prepare for various exams. It provides a realistic testing environment, detailed analytics, and progress tracking to ensure success.
-
 ## Tech Stack
 
 ### Frontend
-- **React**: Modern UI library for building interactive user interfaces.
-- **Tailwind CSS**: Utility-first CSS framework for rapid UI development.
-- **Radix UI / Shadcn UI**: Accessible and customizable component primitives.
-- **Clerk**: Secure and easy-to-use authentication and user management.
-- **Vite**: Fast build tool and development server.
+- **React**
+- **Tailwind CSS**
+- **Radix UI / Shadcn UI**
+- **Clerk**
 
 ### Backend
-- **Node.js**: JavaScript runtime for building scalable server-side applications.
-- **Express**: Minimal and flexible web application framework.
-- **MongoDB**: NoSQL database for flexible data storage.
-- **Mongoose**: ODM library for MongoDB and Node.js.
-- **Cloudinary**: Cloud-based image and media management.
+- **Node.js**
+- **Express**
+- **MongoDB**
+- **Mongoose**
+- **Cloudinary**
 
 ## Features
 
@@ -34,4 +33,63 @@
 - **Result Analysis**: Instant scoring and feedback on completed tests.
 - **Resume Capability**: Save progress and resume tests at any time without losing data.
 
-On mobile browsers go to https://prepara.bksh.site/?eruda=true for dev tools
+## Local Installation & Setup
+
+Follow these steps to install and run the project locally.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) installed on your machine.
+- A running instance of MongoDB (local or Atlas URI).
+- A [Clerk](https://clerk.dev/) account for authentication.
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd testsat
+```
+
+### 2. Backend Setup
+
+Navigate to the backend directory, install dependencies, and set up your environment variables:
+
+```bash
+cd backend
+npm install
+```
+
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+> **Note:** Open `backend/.env` and fill in your actual values (e.g., `MONGO_URI`, `CLERK_SECRET_KEY`, etc.).
+
+Start the backend development server:
+```bash
+npm run dev
+```
+
+### 3. Frontend Setup
+
+Open a new terminal window/tab and navigate to the frontend directory:
+
+```bash
+cd frontend
+npm install
+```
+
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+> **Note:** Open `frontend/.env` and update it with the necessary variables (e.g., `VITE_CLERK_PUBLISHABLE_KEY`, backend URL).
+
+Start the frontend development server:
+```bash
+npm run dev
+```
+
+The application should now be accessible in your browser (usually `http://localhost:5173`).
+
+On mobile browsers go to https://prepara.bksh.site/?eruda=true || http://localhost:5173/?eruda=true for dev tools
