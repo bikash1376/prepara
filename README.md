@@ -2,6 +2,8 @@
 
 ![Prepara](prepara.png)
 
+![Dashboard](dashboard.png)
+
 ![Overview](overview.png)
 
 **Prepara** is a comprehensive online digital practice test platform designed to help students prepare for various exams. It provides a realistic testing environment, detailed analytics, and progress tracking to ensure success.
