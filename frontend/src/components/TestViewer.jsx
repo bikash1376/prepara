@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import { Loader2, ChevronDown, Flag, Check } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
 
 const TestViewer = ({ test: propTest, onSubmit, isPreview = false, isSubmitting = false }) => {
   const { id } = useParams();
+  const { getToken } = useAuth();
   const [test, setTest] = useState(propTest);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -20,7 +22,12 @@ const TestViewer = ({ test: propTest, onSubmit, isPreview = false, isSubmitting 
     if (propTest) {
       setTest(propTest);
     } else if (id) {
-      fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}`)
+      getToken()
+        .then((token) =>
+          fetch(`${import.meta.env.VITE_API_URL}/api/v1/test/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
         .then((res) => res.json())
         .then((data) => setTest(data));
     }

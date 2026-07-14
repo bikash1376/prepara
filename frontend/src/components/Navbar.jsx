@@ -4,9 +4,6 @@ import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser, UserButton } from "@clerk/clerk-react";
 import { useTheme } from "./theme-provider";
-import PaymentButton from "./PaymentButton";
-import CustomerPortal from "./CustomerPortal";
-import TestPolarButton from "./TestPolarButton";
 
 // shadcn/ui components
 import {

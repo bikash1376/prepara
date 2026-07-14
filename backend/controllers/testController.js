@@ -42,14 +42,29 @@ export const addTest = async (req, res) => {
     }
 }   
 
-export const  getTestById = async (req, res) => {
-    // Logic to get a test by ID
+// Remove correct answers/explanations so students can't read them from the network tab
+const sanitizeTestForStudent = (test) => {
+    const plain = test.toObject();
+    plain.sections?.forEach(section => {
+        section.modules?.forEach(module => {
+            module.questions?.forEach(q => {
+                delete q.answer;
+                delete q.explanation;
+            });
+        });
+    });
+    return plain;
+};
 
+export const getTestById = async (req, res) => {
     try {
         const test = await Test.findById(req.params.id);
 
         if(!test) return res.status(404).send("Test not found");
 
+        if (req.user?.role !== 'admin') {
+            return res.json(sanitizeTestForStudent(test));
+        }
         res.json(test);
 
     } catch (error) {
@@ -125,10 +140,9 @@ export const checkTestAccess = async (req, res) => {
             return res.status(404).json({ message: "Test not found" });
         }
         
-        res.json({ 
+        res.json({
             message: "Test available",
-            canTake: true,
-            test: test
+            canTake: true
         });
     } catch (error) {
         console.error("Error checking test access:", error);
@@ -160,7 +174,7 @@ export const deleteTest = async (req, res) => {
         const test = await Test.findByIdAndDelete(req.params.id);
         if(!test) return res.status(404).send("Test not found");
 
-        res.status(200).send(`Test with ID: ${req.params.id} deleted`, test);
+        res.status(200).json({ message: `Test with ID: ${req.params.id} deleted` });
 
     }
     catch (error) {

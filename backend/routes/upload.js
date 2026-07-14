@@ -2,6 +2,7 @@ import cloudinary from '../config/cloudinary.js';
 import express from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import { protect, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const upload = multer({
 });
 
 // Upload image to Cloudinary
-router.post('/image', upload.single('image'), async (req, res) => {
+router.post('/image', protect, isAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
@@ -53,7 +54,7 @@ router.post('/image', upload.single('image'), async (req, res) => {
 });
 
 // Delete image from Cloudinary
-router.delete('/image/:publicId', async (req, res) => {
+router.delete('/image/:publicId', protect, isAdmin, async (req, res) => {
   try {
     const { publicId } = req.params;
     if (!publicId) {

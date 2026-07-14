@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { ChevronDown, Loader2, MoreVertical, X, Flag, ArrowRight, ArrowUp } from "lucide-react";
+import { Loader2, X, Flag } from "lucide-react";
 import DirectionsDialog from "./DirectionsDialog";
 import ExamNavbar from "./ExamNavbar";
 import { IoIosArrowUp } from "react-icons/io";
@@ -13,6 +13,109 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// Hoisted out of TestSubmission and memoized so the 1-second timer tick
+// doesn't re-parse and re-render all KaTeX math on every render.
+const LaTeXRenderer = React.memo(({ text }) => {
+  if (!text) return null;
+
+  try {
+    // Split text by LaTeX delimiters: $$...$$, $...$, \[...\], \(...\)
+    const parts = text.split(/(\$\$[^$]+\$\$|\\\[[\s\S]*?\\\]|\$[^$]+\$|\\\(.*?\\\))/);
+
+    return (
+      <span style={{ whiteSpace: 'pre-wrap' }}>
+        {parts.map((part, index) => {
+          if (part.startsWith('$$') && part.endsWith('$$')) {
+            return <BlockMath key={index} math={part.slice(2, -2)} />;
+          } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
+            return <BlockMath key={index} math={part.slice(2, -2)} />;
+          } else if (part.startsWith('$') && part.endsWith('$')) {
+            return <InlineMath key={index} math={part.slice(1, -1)} />;
+          } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
+            return <InlineMath key={index} math={part.slice(2, -2)} />;
+          } else {
+            return <span key={index} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
+          }
+        })}
+      </span>
+    );
+  } catch (error) {
+    return <span className="text-destructive">LaTeX Error: {error.message}</span>;
+  }
+});
+
+// Submit Confirmation Dialog Component
+const SubmitConfirmationDialog = ({ open, onOpenChange, isLastModule, submitting, onConfirm }) => {
+  if (!open) return null;
+
+  const handleConfirmSubmit = () => {
+    onOpenChange(false);
+    onConfirm();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Dialog */}
+      <div className="relative bg-card text-card-foreground rounded-lg shadow-xl p-6 max-w-md w-full mx-4 border border-border">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
+              <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold">
+              {isLastModule ? "Submit Test" : "Submit Module"}
+            </h2>
+          </div>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="text-muted-foreground hover:text-foreground text-3xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <p className="text-muted-foreground mb-4">
+            {isLastModule
+              ? "You are about to submit your entire test. Once submitted, you will not be able to make any changes or return to review your answers."
+              : "You are about to submit this module. Once submitted, you will not be able to return to this module or make any changes to your answers."
+            }
+          </p>
+          <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-lg p-3">
+            <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium">
+              ⚠️ This action cannot be undone
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="flex-1 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirmSubmit}
+            disabled={submitting}
+            className="flex-1 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 disabled:opacity-50 transition-colors font-medium"
+          >
+            {submitting ? "Submitting..." : (isLastModule ? "Submit Test" : "Submit Module")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const TestSubmission = () => {
   const { id } = useParams();
@@ -42,7 +145,6 @@ const TestSubmission = () => {
   const [startTime] = useState(Date.now());
   const [showTimer, setShowTimer] = useState(true);
   const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
-  const [isQuestionSwitchOpen, setIsQuestionSwitchOpen] = useState(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
 
   // Load Desmos API
@@ -298,37 +400,6 @@ const TestSubmission = () => {
       });
   };
 
-  const autoSubmitTest = async (token, testData) => {
-       const allAnswers = [];
-       for (let s = 0; s < testData.sections.length; s++) {
-         for (let m = 0; m < testData.sections[s].modules.length; m++) {
-           allAnswers.push(...new Array(testData.sections[s].modules[m].questions.length).fill(""));
-         }
-       }
-       
-       try {
-          await fetch(
-            `${import.meta.env.VITE_API_URL}/api/v1/submission/submit`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                testId: id,
-                answers: allAnswers,
-                timeTaken: 0,
-              }),
-            }
-          );
-          navigate("/test-list");
-       } catch (e) {
-         console.error("Auto-submission failed", e);
-         navigate("/test-list");
-       }
-  };
-
   const initializeFreshTest = (data) => {
         setTimer(data.sections[0].modules[0].timer);
         setModuleAnswers({
@@ -381,11 +452,7 @@ const TestSubmission = () => {
     if (loading || inBreak) return;
     if (timer <= 0) return;
     const t = setTimeout(() => {
-        setTimer(newTimer => {
-            const nextTime = newTimer - 1;
-            localStorage.setItem(`test_timer_${id}`, nextTime.toString());
-            return nextTime;
-        });
+        setTimer(newTimer => newTimer - 1);
     }, 1000);
     return () => clearTimeout(t);
   }, [timer, loading, inBreak]);
@@ -687,214 +754,7 @@ const TestSubmission = () => {
   }
 
   const q = module.questions[currentQuestion];
-
-  // LaTeX Renderer Component
-  const LaTeXRenderer = ({ text }) => {
-    if (!text) return null;
-    
-    try {
-      // Split text by LaTeX delimiters: $$...$$, $...$, \[...\], \(...\)
-      // We look for:
-      // 1. $$...$$ (Block)
-      // 2. \[...\] (Block)
-      // 3. $...$ (Inline)
-      // 4. \(...\) (Inline)
-      // The regex captures these groups.
-      const parts = text.split(/(\$\$[^$]+\$\$|\\\[[\s\S]*?\\\]|\$[^$]+\$|\\\(.*?\\\))/);
-
-      return (
-        <span style={{ whiteSpace: 'pre-wrap' }}>
-          {parts.map((part, index) => {
-            if (part.startsWith('$$') && part.endsWith('$$')) {
-              // Block math $$...$$
-              const latex = part.slice(2, -2);
-              return <BlockMath key={index} math={latex} />;
-            } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
-              // Block math \[...\]
-              const latex = part.slice(2, -2);
-              return <BlockMath key={index} math={latex} />;
-            } else if (part.startsWith('$') && part.endsWith('$')) {
-              // Inline math $...$
-              const latex = part.slice(1, -1);
-              return <InlineMath key={index} math={latex} />;
-            } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
-               // Inline math \(...\)
-               const latex = part.slice(2, -2);
-               return <InlineMath key={index} math={latex} />;
-            } else {
-              // Regular text - preserve line breaks and spacing
-              return <span key={index} style={{ whiteSpace: 'pre-wrap' }}>{part}</span>;
-            }
-          })}
-        </span>
-      );
-    } catch (error) {
-      return <span className="text-destructive">LaTeX Error: {error.message}</span>;
-    }
-  };
-
-  // Question Switch Dialog Component
-  const QuestionSwitchDialog = ({ open, onOpenChange }) => {
-    if (!open) return null;
-
-    const handleQuestionSelect = (qIdx) => {
-      jumpToQuestion(qIdx);
-      onOpenChange(false);
-    };
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50"
-          onClick={() => onOpenChange(false)}
-        />
-        
-        {/* Dialog */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Select Question</h2>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-3xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mb-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span>Answered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-              <span>For Review</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-300 rounded"></div>
-              <span>Unanswered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded ring-2 ring-blue-300"></div>
-              <span>Current</span>
-            </div>
-          </div>
-
-          {/* Question Grid */}
-          <div className="grid grid-cols-8 gap-3">
-            {module.questions.map((_, qIdx) => {
-              const isAnswered = answersArr[qIdx] !== "";
-              const isForReview = getReviewedQuestions().has(qIdx);
-              const isCurrent = qIdx === currentQuestion;
-              
-              let bgColor = "bg-gray-300 hover:bg-gray-400";
-              if (isAnswered && isForReview) {
-                bgColor = "bg-yellow-500 hover:bg-yellow-600";
-              } else if (isAnswered) {
-                bgColor = "bg-green-500 hover:bg-green-600";
-              } else if (isForReview) {
-                bgColor = "bg-yellow-400 hover:bg-yellow-500";
-              }
-              
-              return (
-                <button
-                  key={qIdx}
-                  onClick={() => handleQuestionSelect(qIdx)}
-                  className={`w-12 h-12 rounded-lg text-white font-semibold transition-all ${bgColor} ${
-                    isCurrent ? "ring-4 ring-blue-500 ring-offset-2" : ""
-                  } hover:scale-105 shadow-md`}
-                >
-                  {qIdx + 1}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Question {currentQuestion + 1} of {module.questions.length} • {section.name} - {module.name}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Submit Confirmation Dialog Component
-  const SubmitConfirmationDialog = ({ open, onOpenChange }) => {
-    if (!open) return null;
-
-    const isLastModule = currentModule === section.modules.length - 1 && currentSection === test.sections.length - 1;
-
-    const handleConfirmSubmit = () => {
-      onOpenChange(false);
-      handleModuleSubmit();
-    };
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={() => onOpenChange(false)}
-        />
-        
-        {/* Dialog */}
-        <div className="relative bg-card text-card-foreground rounded-lg shadow-xl p-6 max-w-md w-full mx-4 border border-border">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold">
-                {isLastModule ? "Submit Test" : "Submit Module"}
-              </h2>
-            </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-muted-foreground hover:text-foreground text-3xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-muted-foreground mb-4">
-              {isLastModule 
-                ? "You are about to submit your entire test. Once submitted, you will not be able to make any changes or return to review your answers."
-                : "You are about to submit this module. Once submitted, you will not be able to return to this module or make any changes to your answers."
-              }
-            </p>
-            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-lg p-3">
-              <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium">
-                ⚠️ This action cannot be undone
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => onOpenChange(false)}
-              className="flex-1 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmSubmit}
-              disabled={submitting}
-              className="flex-1 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 disabled:opacity-50 transition-colors font-medium"
-            >
-              {submitting ? "Submitting..." : (isLastModule ? "Submit Test" : "Submit Module")}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const isLastModule = currentModule === section.modules.length - 1 && currentSection === test.sections.length - 1;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -921,29 +781,16 @@ const TestSubmission = () => {
         onOpenChange={setIsDirectionsOpen}
       />
 
-      <QuestionSwitchDialog
-        open={isQuestionSwitchOpen}
-        onOpenChange={setIsQuestionSwitchOpen}
-      />
-
       <SubmitConfirmationDialog
         open={isSubmitConfirmOpen}
         onOpenChange={setIsSubmitConfirmOpen}
+        isLastModule={isLastModule}
+        submitting={submitting}
+        onConfirm={handleModuleSubmit}
       />
 
       {/* Main Content Area with top and bottom padding for fixed elements */}
       <div className="pt-20 pb-20 px-6">
-        {/* Question Navigation Panel */}
-        <div className="flex justify-end items-center gap-4 mb-6">
-          {/* <button
-            onClick={() => setIsQuestionSwitchOpen(true)}
-            className="px-4 py-2 rounded text-sm font-medium transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-between"
-          >
-            Question {currentQuestion + 1} of {module.questions.length}
-            <ChevronDown className="ml-2 w-5 h-5" />
-          </button> */}
-        </div>
-
         {/* Main Content Layout */}
         <div className="flex gap-6 mb-6">
           {/* Question Panel - Left Side */}
@@ -1219,10 +1066,7 @@ const TestSubmission = () => {
                 disabled={submitting}
                 className="px-8 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 font-medium"
               >
-                {currentModule === section.modules.length - 1 &&
-                currentSection === test.sections.length - 1
-                  ? "Submit Test"
-                  : "Submit Module"}
+                {isLastModule ? "Submit Test" : "Submit Module"}
               </button>
             )}
           </div>

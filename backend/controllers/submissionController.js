@@ -1,5 +1,6 @@
 import Submission from '../models/Submission.js';
 import Test from '../models/Test.js';
+import TestProgress from '../models/TestProgress.js';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
 
@@ -12,6 +13,15 @@ export const submitTest = async (req, res) => {
     // Validate input
     if (!testId || !answers || !Array.isArray(answers)) {
       return res.status(400).json({ message: "Invalid submission data" });
+    }
+
+    // Block resubmission server-side (the access check on the frontend is advisory only)
+    const existingSubmission = await Submission.findOne({ userId, testId });
+    if (existingSubmission) {
+      return res.status(403).json({
+        message: "You have already completed this test",
+        submissionId: existingSubmission._id
+      });
     }
 
     // Get the test with correct answers
@@ -67,7 +77,7 @@ export const submitTest = async (req, res) => {
 
     const totalQuestions = allQuestions.length;
     const score = correctCount;
-    const percentage = Math.round((correctCount / totalQuestions) * 100);
+    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
     // Create submission record
     const submission = await Submission.create({
@@ -80,6 +90,9 @@ export const submitTest = async (req, res) => {
       percentage: percentage,
       timeTaken: timeTaken || 0
     });
+
+    // Saved in-progress state is no longer needed once the test is submitted
+    await TestProgress.deleteOne({ userId, testId }).catch(() => {});
 
     // Return detailed results
     res.json({

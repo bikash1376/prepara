@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { UploadCloud, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { UploadCloud, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import axios from 'axios';
@@ -10,6 +11,7 @@ const ImageUpload = ({ onImageChange, currentImage }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
+  const { getToken } = useAuth();
 
   const uploadImage = async (file) => {
     const formData = new FormData();
@@ -18,11 +20,12 @@ const ImageUpload = ({ onImageChange, currentImage }) => {
     try {
       setIsUploading(true);
       setUploadProgress(30); // Show some initial progress
-      
+
+      const token = await getToken();
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);

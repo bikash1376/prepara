@@ -11,22 +11,15 @@ const __dirname = path.dirname(__filename);
 
 // Import routes
 import authRoutes from './routes/auth.js';
-import addTest from './routes/test.js';
-// import studentTestRoutes from './routes/studentTest.js';
+import testRoutes from './routes/test.js';
 import adminTestRoutes from './routes/adminTest.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import submissionRoutes from './routes/submission.js';
 import uploadRoutes from './routes/upload.js';
-
-
-// Debug: Check if environment variables are loaded
-// console.log('Environment check:');
-// console.log('CLERK_SECRET_KEY exists:', !!process.env.CLERK_SECRET_KEY);
-// console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
-// console.log('PORT:', process.env.PORT); 
+import polarRoutes from './routes/polar.js';
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -54,11 +47,13 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/test', addTest); 
-// app.use('/api/v1/student/test', studentTestRoutes);
+app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/admin', adminTestRoutes);
 app.use("/api/v1/admin", adminRoutes);
+// Frontend calls both singular (student flows) and plural (admin flows) paths
+app.use('/api/v1/submission', submissionRoutes);
 app.use('/api/v1/submissions', submissionRoutes);
+app.use('/api/v1/polar', polarRoutes);
 
 // File upload routes
 app.use('/api/upload', uploadRoutes);

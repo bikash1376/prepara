@@ -1,12 +1,12 @@
 import express from 'express';
 import { Checkout, CustomerPortal, Webhooks } from "@polar-sh/express";
-import polar from '../config/polarClient.js';
 import User from '../models/User.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 // Debug route to check environment variables
-router.get('/debug', (req, res) => {
+router.get('/debug', protect, (req, res) => {
   res.json({
     polarAccessTokenExists: !!process.env.POLAR_ACCESS_TOKEN,
     polarWebhookSecretExists: !!process.env.POLAR_WEBHOOK_SECRET,
@@ -19,7 +19,7 @@ router.get('/debug', (req, res) => {
 });
 
 // Checkout route - initiate payment
-router.get('/checkout', (req, res, next) => {
+router.get('/checkout', protect, (req, res, next) => {
   // console.log('Polar checkout called with products:', req.query.products);
   // console.log('Environment:', process.env.POLAR_ENV);
   // console.log('Access token exists:', !!process.env.POLAR_ACCESS_TOKEN);
@@ -41,7 +41,7 @@ router.get('/checkout', (req, res, next) => {
 });
 
 // Customer Portal route - manage subscriptions
-router.get('/portal', CustomerPortal({
+router.get('/portal', protect, CustomerPortal({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
   server: process.env.POLAR_ENV === "sandbox" ? "sandbox" : "production",
   getCustomerId: (req) => {

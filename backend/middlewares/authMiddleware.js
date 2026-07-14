@@ -62,16 +62,10 @@ export const protect = async (req, res, next) => {
         email: clerkUser.emailAddresses[0]?.emailAddress,
         username: clerkUser.username || undefined,
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
-        role: role
+        role: role,
+        polarCustomerId: user.polarCustomerId
       };
-      
-      // console.log("Auth middleware - User authenticated:", {
-      //   id: userId,
-      //   role: role,
-      //   email: clerkUser.emailAddresses[0]?.emailAddress
-      // });
-      
-      // Continue to next middleware
+
       next();
     } catch (error) {
       console.error("Error in user sync:", error);

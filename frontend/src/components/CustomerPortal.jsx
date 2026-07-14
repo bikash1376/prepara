@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { Settings, CreditCard } from 'lucide-react';
 
@@ -30,7 +30,7 @@ const CustomerPortal = ({ className = "", variant = "outline" }) => {
 
     try {
       // Redirect to Polar customer portal
-      const response = await fetch('/api/v1/polar/portal', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/polar/portal`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${await getToken()}`,

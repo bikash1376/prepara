@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,7 +30,7 @@ const PaymentButton = ({
 
     try {
       // First check if the backend is responding
-      const debugResponse = await fetch('/api/v1/polar/debug', {
+      const debugResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/polar/debug`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${await getToken()}`,
@@ -45,7 +45,7 @@ const PaymentButton = ({
       }
 
       // Redirect to Polar checkout - use the productId prop
-      const response = await fetch(`/api/v1/polar/checkout?products=${productId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/polar/checkout?products=${productId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${await getToken()}`,
