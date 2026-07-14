@@ -16,7 +16,6 @@ import adminTestRoutes from './routes/adminTest.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import submissionRoutes from './routes/submission.js';
 import uploadRoutes from './routes/upload.js';
-import polarRoutes from './routes/polar.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,7 +52,6 @@ app.use("/api/v1/admin", adminRoutes);
 // Frontend calls both singular (student flows) and plural (admin flows) paths
 app.use('/api/v1/submission', submissionRoutes);
 app.use('/api/v1/submissions', submissionRoutes);
-app.use('/api/v1/polar', polarRoutes);
 
 // File upload routes
 app.use('/api/upload', uploadRoutes);

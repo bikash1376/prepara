@@ -22,7 +22,6 @@ const AdminTestPreview = lazy(() => import("./components/AdminTestPreview"));
 const Tests = lazy(() => import("./components/Tests"));
 const AdminAiChat = lazy(() => import("./components/AdminAiChat"));
 const LandingPage = lazy(() => import("./components/LandingPage"));
-const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
 
 // Home page component that handles authentication-based routing
 const HomePage = () => {
@@ -197,7 +196,6 @@ const AppContent = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/login/*" element={<AuthForm mode="login" />} />
           <Route path="/signup/*" element={<AuthForm mode="signup" />} />
-          <Route path="/payment/success" element={<PaymentSuccess />} />
         </Routes>
       </Suspense>
     </>

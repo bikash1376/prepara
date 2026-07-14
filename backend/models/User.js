@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   password: { type: String }, // Not required for OAuth users
   googleId: { type: String }, // Only for Google users (legacy)
   clerkId: { type: String, unique: true, sparse: true }, // Clerk user ID
-  polarCustomerId: { type: String }, // Polar billing customer ID
   role: { type: String, enum: ['student', 'admin'], required: true }
 }, {
   timestamps: true

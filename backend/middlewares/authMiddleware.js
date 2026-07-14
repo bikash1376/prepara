@@ -62,8 +62,7 @@ export const protect = async (req, res, next) => {
         email: clerkUser.emailAddresses[0]?.emailAddress,
         username: clerkUser.username || undefined,
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
-        role: role,
-        polarCustomerId: user.polarCustomerId
+        role: role
       };
 
       next();
