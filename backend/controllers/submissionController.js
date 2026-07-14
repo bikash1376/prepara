@@ -173,10 +173,18 @@ export const getTestSubmissions = async (req, res) => {
   try {
     const { testId } = req.params;
 
+    // userId holds a Clerk ID string (not a ref), so join against User manually
     const submissions = await Submission.find({ testId })
-      .populate('userId', 'name email')
       .select('userId score totalQuestions percentage submittedAt timeTaken')
-      .sort({ submittedAt: -1 });
+      .sort({ submittedAt: -1 })
+      .lean();
+
+    const clerkIds = [...new Set(submissions.map(s => s.userId))];
+    const submitters = await User.find({ clerkId: { $in: clerkIds } }).select('clerkId name email').lean();
+    const userByClerkId = Object.fromEntries(submitters.map(u => [u.clerkId, u]));
+    submissions.forEach(s => {
+      s.user = userByClerkId[s.userId] || null;
+    });
 
     // Calculate statistics
     const totalSubmissions = submissions.length;

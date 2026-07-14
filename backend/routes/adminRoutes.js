@@ -116,6 +116,37 @@ router.put("/users/:id", protect, isAdmin, async (req, res) => {
   }
 });
 
+// Admin: Get all submissions across the platform (most recent first)
+router.get("/submissions", protect, isAdmin, async (req, res) => {
+  try {
+    const submissions = await Submission.find()
+      .sort({ submittedAt: -1 })
+      .limit(200)
+      .select("userId testName score totalQuestions percentage submittedAt timeTaken");
+
+    const clerkIds = [...new Set(submissions.map((s) => s.userId))];
+    const submitters = await User.find({ clerkId: { $in: clerkIds } }).select("clerkId name email");
+    const userByClerkId = Object.fromEntries(submitters.map((u) => [u.clerkId, u]));
+
+    res.json(
+      submissions.map((s) => ({
+        _id: s._id,
+        student: userByClerkId[s.userId]?.name || userByClerkId[s.userId]?.email || "Unknown",
+        email: userByClerkId[s.userId]?.email || "",
+        testName: s.testName,
+        score: s.score,
+        totalQuestions: s.totalQuestions,
+        percentage: s.percentage,
+        timeTaken: s.timeTaken,
+        submittedAt: s.submittedAt,
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching all submissions:", error);
+    res.status(500).json({ message: "Failed to fetch submissions" });
+  }
+});
+
 // Admin: Get all submissions for a user
 router.get("/submissions/:userId", protect, isAdmin, getUserSubmissions);
 
