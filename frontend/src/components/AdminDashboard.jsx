@@ -187,7 +187,7 @@ const AdminDashboard = () => {
       {/* Quick Actions */}
       <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Link to="/admin/test-list">
+        <Link to="/admin/add-test">
           <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Create Test</CardTitle>
