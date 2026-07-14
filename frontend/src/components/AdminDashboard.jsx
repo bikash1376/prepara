@@ -29,8 +29,30 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+// Compact relative time for the activity feed
+const timeAgo = (date) => {
+  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
+
+const initials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "?";
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [apiStatus, setApiStatus] = useState("checking"); // checking | ok | down
   const [expandedUser, setExpandedUser] = useState(null);
   const [userSubmissions, setUserSubmissions] = useState({});
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
@@ -38,7 +60,23 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchUsers();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = await getToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("stats request failed");
+      setStats(await res.json());
+      setApiStatus("ok");
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      setApiStatus("down");
+    }
+  };
 
   const fetchUsers = async () => {
     try {

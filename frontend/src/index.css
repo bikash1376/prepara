@@ -56,42 +56,43 @@
 
 
 :root {
-  --background: oklch(0.9600 0.0187 289.3301);
-  --foreground: oklch(0.2101 0.0318 264.6645);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2101 0.0318 264.6645);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2101 0.0318 264.6645);
-  --primary: oklch(0.5555 0.1748 285.3782);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9168 0.0379 288.9067);
-  --secondary-foreground: oklch(0.4304 0.1301 285.0855);
-  --muted: oklch(0.9168 0.0379 288.9067);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.5957 0.1622 287.0753);
-  --accent-foreground: oklch(1.0000 0 0);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.8969 0.0409 290.1381);
-  --input: oklch(0.8969 0.0409 290.1381);
-  --ring: oklch(0.5555 0.1748 285.3782);
-  --chart-1: oklch(0.5555 0.1748 285.3782);
-  --chart-2: oklch(0.6476 0.1433 287.7926);
-  --chart-3: oklch(0.7375 0.1117 289.2345);
-  --chart-4: oklch(0.8278 0.0726 290.8926);
-  --chart-5: oklch(0.9168 0.0379 288.9067);
-  --sidebar: oklch(1.0000 0 0);
-  --sidebar-foreground: oklch(0.2101 0.0318 264.6645);
-  --sidebar-primary: oklch(0.5555 0.1748 285.3782);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.5957 0.1622 287.0753);
-  --sidebar-accent-foreground: oklch(1.0000 0 0);
-  --sidebar-border: oklch(0.8969 0.0409 290.1381);
-  --sidebar-ring: oklch(0.5555 0.1748 285.3782);
-  --font-sans: Poppins;
-  --font-serif: serif;
+  /* Prepara brand: warm paper, deep ink, landing-page violet */
+  --background: #FAF7EF;
+  --foreground: #1B1830;
+  --card: #FFFFFF;
+  --card-foreground: #1B1830;
+  --popover: #FFFFFF;
+  --popover-foreground: #1B1830;
+  --primary: #6C5CE7;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3EFE3;
+  --secondary-foreground: #1B1830;
+  --muted: #F3EFE3;
+  --muted-foreground: #6E6A80;
+  --accent: #ECE8FB;
+  --accent-foreground: #1B1830;
+  --destructive: #E5484D;
+  --destructive-foreground: #FFFFFF;
+  --border: #E4DECE;
+  --input: #E4DECE;
+  --ring: #6C5CE7;
+  --chart-1: #6C5CE7;
+  --chart-2: #4ECDB4;
+  --chart-3: #FFC94B;
+  --chart-4: #FF7A59;
+  --chart-5: #86B7FE;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1B1830;
+  --sidebar-primary: #6C5CE7;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #ECE8FB;
+  --sidebar-accent-foreground: #1B1830;
+  --sidebar-border: #E4DECE;
+  --sidebar-ring: #6C5CE7;
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: monospace;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   --shadow-2xs: 0px 4px 8px -2px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 4px 8px -2px hsl(0 0% 0% / 0.05);
   --shadow-sm: 0px 4px 8px -2px hsl(0 0% 0% / 0.10), 0px 1px 2px -3px hsl(0 0% 0% / 0.10);
@@ -105,42 +106,43 @@
 }
 
 .dark {
-  --background: oklch(0.1720 0.0227 292.1720);
-  --foreground: oklch(0.9846 0.0017 247.8389);
-  --card: oklch(0.2157 0.0293 292.9489);
-  --card-foreground: oklch(0.9846 0.0017 247.8389);
-  --popover: oklch(0.2157 0.0293 292.9489);
-  --popover-foreground: oklch(0.9846 0.0017 247.8389);
-  --primary: oklch(0.6476 0.1433 287.7926);
-  --primary-foreground: oklch(0.1720 0.0227 292.1720);
-  --secondary: oklch(0.2926 0.0434 291.1165);
-  --secondary-foreground: oklch(0.9276 0.0058 264.5313);
-  --muted: oklch(0.2926 0.0434 291.1165);
-  --muted-foreground: oklch(0.7137 0.0192 261.3246);
-  --accent: oklch(0.5957 0.1622 287.0753);
-  --accent-foreground: oklch(1.0000 0 0);
-  --destructive: oklch(0.3958 0.1331 25.7230);
-  --destructive-foreground: oklch(0.9846 0.0017 247.8389);
-  --border: oklch(0.3490 0.0636 290.1386);
-  --input: oklch(0.3490 0.0636 290.1386);
-  --ring: oklch(0.6476 0.1433 287.7926);
-  --chart-1: oklch(0.6476 0.1433 287.7926);
-  --chart-2: oklch(0.5957 0.1622 287.0753);
-  --chart-3: oklch(0.5555 0.1748 285.3782);
-  --chart-4: oklch(0.5080 0.1793 284.0703);
-  --chart-5: oklch(0.4607 0.1835 282.4131);
-  --sidebar: oklch(0.2157 0.0293 292.9489);
-  --sidebar-foreground: oklch(0.9846 0.0017 247.8389);
-  --sidebar-primary: oklch(0.6476 0.1433 287.7926);
-  --sidebar-primary-foreground: oklch(0.1720 0.0227 292.1720);
-  --sidebar-accent: oklch(0.5957 0.1622 287.0753);
-  --sidebar-accent-foreground: oklch(1.0000 0 0);
-  --sidebar-border: oklch(0.3490 0.0636 290.1386);
-  --sidebar-ring: oklch(0.6476 0.1433 287.7926);
-  --font-sans: Poppins;
-  --font-serif: serif;
+  /* Prepara brand, night mode: ink background, paper text, lifted violet */
+  --background: #16132A;
+  --foreground: #F2EFE6;
+  --card: #1F1B3A;
+  --card-foreground: #F2EFE6;
+  --popover: #1F1B3A;
+  --popover-foreground: #F2EFE6;
+  --primary: #8B7FF0;
+  --primary-foreground: #16132A;
+  --secondary: #2A2549;
+  --secondary-foreground: #E8E4FB;
+  --muted: #2A2549;
+  --muted-foreground: #A5A0BE;
+  --accent: #322C58;
+  --accent-foreground: #F2EFE6;
+  --destructive: #E5484D;
+  --destructive-foreground: #FFFFFF;
+  --border: #363059;
+  --input: #363059;
+  --ring: #8B7FF0;
+  --chart-1: #8B7FF0;
+  --chart-2: #4ECDB4;
+  --chart-3: #FFC94B;
+  --chart-4: #FF7A59;
+  --chart-5: #86B7FE;
+  --sidebar: #1F1B3A;
+  --sidebar-foreground: #F2EFE6;
+  --sidebar-primary: #8B7FF0;
+  --sidebar-primary-foreground: #16132A;
+  --sidebar-accent: #322C58;
+  --sidebar-accent-foreground: #F2EFE6;
+  --sidebar-border: #363059;
+  --sidebar-ring: #8B7FF0;
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: monospace;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   --shadow-2xs: 0px 6px 12px -4px hsl(0 0% 0% / 0.13);
   --shadow-xs: 0px 6px 12px -4px hsl(0 0% 0% / 0.13);
   --shadow-sm: 0px 6px 12px -4px hsl(0 0% 0% / 0.25), 0px 1px 2px -5px hsl(0 0% 0% / 0.25);
@@ -155,6 +157,15 @@ body {
   letter-spacing: var(--tracking-normal);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* keep anchored sections clear of the fixed navbar */
+[id] {
+  scroll-margin-top: 88px;
+}
+
 
 
 
@@ -164,11 +175,27 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
 }
 
 button:hover {
   cursor: pointer;
+}
+
+/* ---- Landing page (paper & ink design system) ---- */
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+}
+.font-grotesk {
+  font-family: "Space Grotesk", "Poppins", sans-serif;
+}
+@keyframes landing-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-landing-bob {
+  animation: landing-bob 4s ease-in-out infinite;
 }
 
 Link:hover {
