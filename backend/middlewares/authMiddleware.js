@@ -38,37 +38,54 @@ export const protect = async (req, res, next) => {
       if (!userId) {
         return sendJsonResponse(res, 401, "No user ID found in token");
       }
-      
+
       // Get user from Clerk
       const clerkUser = await clerkClient.users.getUser(userId);
       const role = clerkUser.publicMetadata?.role || 'student';
+      const email = clerkUser.emailAddresses[0]?.emailAddress;
+      const username = clerkUser.username || undefined;
+      const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || username || email || 'Student';
 
-      // Sync user to MongoDB if not exists
-      const user = await User.findOneAndUpdate(
-        { clerkId: userId },
-        {
-          clerkId: userId,
-          email: clerkUser.emailAddresses[0]?.emailAddress,
-          username: clerkUser.username || undefined,
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
-          role: role
-        },
-        { upsert: true, new: true }
-      );
+      // Sync user to MongoDB, writing only when something actually changed
+      let user = await User.findOne({ clerkId: userId });
+
+      if (!user && email) {
+        // Adopt a legacy account (pre-Clerk) that shares this email instead of
+        // inserting a duplicate, which would violate the unique email index
+        user = await User.findOne({ email, clerkId: { $exists: false } });
+        if (user) {
+          user.clerkId = userId;
+        }
+      }
+
+      if (!user) {
+        user = new User({ clerkId: userId, email, username, name, role });
+      } else {
+        user.email = email ?? user.email;
+        user.username = username ?? user.username;
+        user.name = name;
+        user.role = role;
+      }
+
+      if (user.isNew || user.isModified()) {
+        await user.save();
+      }
 
       // Attach user info to request
       req.user = {
         id: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress,
-        username: clerkUser.username || undefined,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username,
-        role: role
+        email,
+        username,
+        name,
+        role
       };
 
       next();
     } catch (error) {
-      console.error("Error in user sync:", error);
-      return sendJsonResponse(res, 500, "Error processing user information");
+      console.error("Error in user sync:", error?.message, error);
+      return sendJsonResponse(res, 500, "Error processing user information", {
+        detail: error?.message
+      });
     }
   });
 };
