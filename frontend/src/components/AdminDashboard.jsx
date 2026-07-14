@@ -2,12 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
-import { Users, Activity, FileText, Trash2, ChevronDown, Loader2, PlusCircle, ClipboardList, Bug, Settings, Server, Database } from "lucide-react";
+import { Users, Activity, FileText, Trash2, ChevronDown, Loader2, PlusCircle, ClipboardList, Bug } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -52,7 +51,6 @@ const initials = (name = "") =>
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
-  const [apiStatus, setApiStatus] = useState("checking"); // checking | ok | down
   const [expandedUser, setExpandedUser] = useState(null);
   const [userSubmissions, setUserSubmissions] = useState({});
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
@@ -71,10 +69,9 @@ const AdminDashboard = () => {
       });
       if (!res.ok) throw new Error("stats request failed");
       setStats(await res.json());
-      setApiStatus("ok");
     } catch (error) {
       console.error("Error fetching stats:", error);
-      setApiStatus("down");
+      setStats({ totalStudents: "—", activeToday: "—", testsTaken: "—", recentActivity: [] });
     }
   };
 
@@ -159,8 +156,8 @@ const AdminDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">All registered users</p>
+            <div className="text-2xl font-bold">{stats ? stats.totalStudents : "—"}</div>
+            <p className="text-xs text-muted-foreground">Registered student accounts</p>
           </CardContent>
         </Card>
         <Card>
@@ -169,8 +166,8 @@ const AdminDashboard = () => {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">Hardcoded value</p>
+            <div className="text-2xl font-bold">{stats ? stats.activeToday : "—"}</div>
+            <p className="text-xs text-muted-foreground">Students active in the last 24 hours</p>
           </CardContent>
         </Card>
         <Card>
@@ -179,7 +176,7 @@ const AdminDashboard = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">28</div>
+            <div className="text-2xl font-bold">{stats ? stats.testsTaken : "—"}</div>
             <p className="text-xs text-muted-foreground">Total test submissions</p>
           </CardContent>
         </Card>
@@ -244,107 +241,44 @@ const AdminDashboard = () => {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mb-8">
-        {/* Recent Activity Mock */}
-        <Card className="col-span-1 md:col-span-4 select-none">
+      <div className="mb-8">
+        {/* Recent Activity (live from submissions) */}
+        <Card className="select-none">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              Latest actions performed across the platform.
+              Latest test submissions across the platform.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-8">
-              <div className="flex items-center">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
-                  <p className="text-sm text-muted-foreground">
-                    Completed "Math Level 1" with 85% score
-                  </p>
-                </div>
-                <div className="ml-auto font-medium text-sm text-muted-foreground">2m ago</div>
+            {!stats ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-              <div className="flex items-center">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                  <AvatarFallback>AS</AvatarFallback>
-                </Avatar>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Alice Smith</p>
-                  <p className="text-sm text-muted-foreground">
-                    Registered as a new student
-                  </p>
-                </div>
-                <div className="ml-auto font-medium text-sm text-muted-foreground">1h ago</div>
-              </div>
-              <div className="flex items-center">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                  <AvatarFallback>RK</AvatarFallback>
-                </Avatar>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Rahul Kumar</p>
-                  <p className="text-sm text-muted-foreground">
-                    Started "Physics Mock Test 3"
-                  </p>
-                </div>
-                <div className="ml-auto font-medium text-sm text-muted-foreground">3h ago</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* System Overview Mock */}
-        <Card className="col-span-1 md:col-span-3 select-none">
-          <CardHeader>
-            <CardTitle>System Overview</CardTitle>
-            <CardDescription>
-              Current status of system components.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                       <Server className="h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : stats.recentActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center p-8">
+                No submissions yet. Activity will show up here once students start taking tests.
+              </p>
+            ) : (
+              <div className="space-y-6">
+                {stats.recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback>{initials(activity.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="ml-4 space-y-1">
+                      <p className="text-sm font-medium leading-none">{activity.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Completed "{activity.testName}" with {activity.percentage}% ({activity.score}/{activity.totalQuestions})
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">API Server</p>
-                      <p className="text-xs text-muted-foreground">Operational</p>
+                    <div className="ml-auto font-medium text-sm text-muted-foreground whitespace-nowrap pl-4">
+                      {timeAgo(activity.submittedAt)}
                     </div>
                   </div>
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                </div>
-                 <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                       <Database className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Database</p>
-                      <p className="text-xs text-muted-foreground">Connected</p>
-                    </div>
-                  </div>
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                </div>
-                 <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                       <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Version</p>
-                      <p className="text-xs text-muted-foreground">v1.2.0-beta</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline">Latest</Badge>
-                </div>
-             </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -355,8 +355,8 @@ const LandingPage = () => {
         className="fixed top-0 left-0 right-0 h-18 z-50 border-b-2 backdrop-blur-md"
         style={{ borderColor: INK, backgroundColor: `${PAPER}E6`, height: "72px" }}
       >
-        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
-          <span className="font-display text-2xl font-bold tracking-tight">Prepara</span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-2">
+          <span className="font-display text-xl sm:text-2xl font-bold tracking-tight">Prepara</span>
 
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">
             <a href="#how" className="hover:opacity-60 transition-opacity">How it works</a>
@@ -364,18 +364,18 @@ const LandingPage = () => {
             <a href="#results" className="hover:opacity-60 transition-opacity">Results</a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <MobileRestrictedAuth mode="signin">
-              <button className="text-sm font-bold px-4 py-2 rounded-full hover:opacity-60 transition-opacity">
+              <button className="text-sm font-bold px-3 sm:px-4 py-2 rounded-full hover:opacity-60 transition-opacity whitespace-nowrap">
                 Log in
               </button>
             </MobileRestrictedAuth>
             <MobileRestrictedAuth mode="signup">
               <button
-                className={`text-sm font-bold px-5 py-2.5 rounded-full border-2 flex items-center gap-1.5 ${cardShadow} ${pressable}`}
+                className={`text-sm font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border-2 flex items-center gap-1.5 whitespace-nowrap ${cardShadow} ${pressable}`}
                 style={{ backgroundColor: VIOLET, borderColor: INK, color: "#fff" }}
               >
-                Get started <ArrowRight className="w-4 h-4" />
+                Get started <ArrowRight className="w-4 h-4 hidden sm:block" />
               </button>
             </MobileRestrictedAuth>
           </div>
@@ -397,14 +397,19 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08 }}
-              className="font-display font-black text-5xl lg:text-[4.2rem] leading-[1.04] tracking-tight mb-6"
+              className="font-display font-black text-4xl sm:text-5xl lg:text-[4.2rem] leading-[1.08] lg:leading-[1.04] tracking-tight mb-6"
             >
               Practice like it's{" "}
-              <span className="relative inline-block whitespace-nowrap">
-                <span
-                  className="absolute inset-x-[-4px] bottom-1 top-[55%] -rotate-1 rounded-sm -z-10"
-                  style={{ backgroundColor: SUN }}
-                />
+              <span
+                style={{
+                  backgroundImage: `linear-gradient(${SUN}, ${SUN})`,
+                  backgroundSize: "100% 42%",
+                  backgroundPosition: "0 78%",
+                  backgroundRepeat: "no-repeat",
+                  boxDecorationBreak: "clone",
+                  WebkitBoxDecorationBreak: "clone",
+                }}
+              >
                 the real test
               </span>
               , score like you mean it.
@@ -430,7 +435,7 @@ const LandingPage = () => {
             >
               <MobileRestrictedAuth mode="signup">
                 <button
-                  className={`px-7 py-4 rounded-full border-2 font-bold text-lg flex items-center gap-2 ${cardShadow} ${pressable}`}
+                  className={`w-full sm:w-auto px-7 py-4 rounded-full border-2 font-bold text-lg flex items-center justify-center gap-2 ${cardShadow} ${pressable}`}
                   style={{ backgroundColor: VIOLET, borderColor: INK, color: "#fff" }}
                 >
                   Start practicing free <ArrowRight className="w-5 h-5" />
@@ -438,12 +443,23 @@ const LandingPage = () => {
               </MobileRestrictedAuth>
               <a
                 href="#how"
-                className={`px-7 py-4 rounded-full border-2 font-bold text-lg bg-white ${cardShadow} ${pressable}`}
+                className={`w-full sm:w-auto text-center px-7 py-4 rounded-full border-2 font-bold text-lg bg-white ${cardShadow} ${pressable}`}
                 style={{ borderColor: INK, color: INK }}
               >
                 How it works
               </a>
             </motion.div>
+
+            {/* Mobile hero visual: simple, in-flow version of the collage */}
+            <div className="lg:hidden relative flex justify-center mt-12 pr-6">
+              <div className="rotate-1 w-full max-w-sm">
+                <QuestionCardMock />
+              </div>
+              <div className="absolute -right-1 -bottom-8 w-20 animate-landing-bob">
+                <PencilBuddy className="w-full rotate-6" />
+              </div>
+              <Sparkle className="absolute -top-4 left-2 w-5 h-5" />
+            </div>
           </div>
 
           {/* Right: sticker collage */}
