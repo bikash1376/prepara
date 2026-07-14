@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prepara.bksh.site/sitemap.xml
